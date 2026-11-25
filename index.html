@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="vi">
   <head>
@@ -446,6 +445,48 @@
         border-radius:10px;padding:9px 12px;font-size:.87rem;margin-top:12px;display:none;
       }
 
+      /* ---------- Owl mascot (decor only) ---------- */
+      #owlFlyer{
+        position:fixed;left:0;top:0;width:64px;height:64px;z-index:80;
+        pointer-events:none;will-change:transform;
+        filter:drop-shadow(0 6px 10px rgba(10,26,47,.28));
+      }
+      #owlFlyer[hidden]{display:none !important}
+      #owlFlyer .owl-flip{width:100%;height:100%}
+      #owlFlyer .owl-bob{width:100%;height:100%;animation:owlBob 1.6s ease-in-out infinite}
+      #owlFlyer.perched .owl-bob{animation-duration:2.8s}
+      #owlFlyer svg{width:100%;height:100%;display:block;overflow:visible}
+      #owlFlyer .owl-wing-l{transform-box:fill-box;transform-origin:88% 18%;animation:owlFlapL .52s ease-in-out infinite}
+      #owlFlyer .owl-wing-r{transform-box:fill-box;transform-origin:12% 18%;animation:owlFlapR .52s ease-in-out infinite}
+      #owlFlyer.perched .owl-wing-l,#owlFlyer.perched .owl-wing-r{animation-duration:1.9s}
+      #owlFlyer .owl-eyes{transform-box:fill-box;transform-origin:50% 50%;animation:owlBlink 4.2s ease-in-out infinite}
+      @keyframes owlFlapL{0%,100%{transform:rotate(6deg)}50%{transform:rotate(-22deg)}}
+      @keyframes owlFlapR{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(22deg)}}
+      @keyframes owlBlink{0%,91%,100%{transform:scaleY(1)}94%{transform:scaleY(.08)}97%{transform:scaleY(1)}}
+      @keyframes owlBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3.5px)}}
+      #owlToggle{
+        position:fixed;right:16px;bottom:16px;z-index:81;width:46px;height:46px;min-height:46px;
+        border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);
+        font-size:1.35rem;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;
+        box-shadow:0 8px 22px rgba(10,26,47,.22);cursor:pointer;pointer-events:auto;
+      }
+      #owlToggle:hover{border-color:var(--teal)}
+      #owlToggle.off{opacity:.55;filter:grayscale(1)}
+      #owlToggle.off::after{
+        content:"";position:absolute;width:34px;height:2.5px;background:var(--danger);
+        transform:rotate(-38deg);border-radius:2px;pointer-events:none;
+      }
+      @media (max-width:640px){
+        #owlFlyer{width:48px;height:48px}
+        #owlToggle{right:12px;bottom:12px;width:42px;height:42px;min-height:42px;font-size:1.2rem}
+      }
+      @media (prefers-reduced-motion: reduce){
+        #owlFlyer .owl-bob,#owlFlyer .owl-wing-l,#owlFlyer .owl-wing-r,#owlFlyer .owl-eyes{animation:none !important}
+      }
+      @media print{
+        #owlFlyer,#owlToggle{display:none !important}
+      }
+
       /* ---------- Print ---------- */
       #printArea{display:none}
       @media print{
@@ -466,6 +507,7 @@
       <div class="wrap">
         <span class="badge">Miễn phí · File không rời khỏi máy bạn</span>
         <h1>Che thông tin &amp; chỉnh sửa PDF vận đơn hàng loạt</h1>
+
       </div>
     </header>
 
@@ -727,7 +769,7 @@
       </section>
 
       <footer>
-        Công cụ chạy hoàn toàn trong trình duyệt của bạn: file vận đơn được xử lý ngay trên máy, không tải lên máy chủ, không lưu lại sau khi bạn đóng trang. Mẫu vị trí ô che (nếu bạn lưu) chỉ nằm trong bộ nhớ của trình duyệt này. Thiết kế Designt bởi Mr.Hiệp
+        Công cụ chạy hoàn toàn trong trình duyệt của bạn: file vận đơn được xử lý ngay trên máy, không tải lên máy chủ, không lưu lại sau khi bạn đóng trang. Mẫu vị trí ô che (nếu bạn lưu) chỉ nằm trong bộ nhớ của trình duyệt này.
       </footer>
     </main>
 
@@ -772,6 +814,45 @@
     </div>
 
     <div id="toast" role="status"></div>
+
+    <!-- Cute owl mascot: pure decoration, never blocks clicks, never printed/exported -->
+    <div id="owlFlyer" aria-hidden="true">
+      <div class="owl-flip" id="owlFlip">
+        <div class="owl-bob">
+          <svg viewBox="0 0 100 100" role="presentation" focusable="false">
+            <!-- ear tufts -->
+            <path d="M28 22 L22 6 L38 14 Z" fill="#7c4a21"/>
+            <path d="M72 22 L78 6 L62 14 Z" fill="#7c4a21"/>
+            <!-- wings (behind body) -->
+            <path class="owl-wing-l" d="M26 42 C8 46 4 64 10 76 C18 80 28 72 30 58 Z" fill="#6b3f1d"/>
+            <path class="owl-wing-r" d="M74 42 C92 46 96 64 90 76 C82 80 72 72 70 58 Z" fill="#6b3f1d"/>
+            <!-- body -->
+            <ellipse cx="50" cy="55" rx="27" ry="34" fill="#96622e"/>
+            <ellipse cx="50" cy="55" rx="27" ry="34" fill="none" stroke="#7c4a21" stroke-width="2"/>
+            <!-- belly -->
+            <ellipse cx="50" cy="66" rx="16.5" ry="19" fill="#ffedb8"/>
+            <path d="M40 60 q3 3 6 0 M48 64 q3 3 6 0 M40 70 q3 3 6 0 M52 72 q3 3 6 0" stroke="#d9a94f" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+            <!-- eyes -->
+            <g class="owl-eyes">
+              <circle cx="39" cy="42" r="10.5" fill="#ffffff"/>
+              <circle cx="61" cy="42" r="10.5" fill="#ffffff"/>
+              <circle cx="39.8" cy="43" r="5.2" fill="#1c2b3a"/>
+              <circle cx="61.8" cy="43" r="5.2" fill="#1c2b3a"/>
+              <circle cx="41.6" cy="41" r="1.9" fill="#ffffff"/>
+              <circle cx="63.6" cy="41" r="1.9" fill="#ffffff"/>
+            </g>
+            <!-- beak -->
+            <path d="M45 52 L55 52 L50 59 Z" fill="#f59e0b" stroke="#d97706" stroke-width="1" stroke-linejoin="round"/>
+            <!-- cheeks -->
+            <circle cx="30" cy="53" r="4" fill="#f9a8a8" opacity=".65"/>
+            <circle cx="70" cy="53" r="4" fill="#f9a8a8" opacity=".65"/>
+            <!-- feet -->
+            <path d="M40 88 v4 M36 92 h8 M60 88 v4 M56 92 h8" stroke="#d97706" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <button id="owlToggle" type="button" title="Bật / tắt cú mèo bay cho vui mắt" aria-label="Bật hoặc tắt cú mèo" aria-pressed="true">🦉</button>
 
     <script>
     (function(){
@@ -2913,6 +2994,139 @@
       $("modalBk").addEventListener("click", function(e){ if (e.target === this) this.classList.remove("on"); });
 
       window.addEventListener("resize", function(){ render(); });
+    })();
+    </script>
+    <script>
+    (function(){
+      "use strict";
+      var KEY = "che-van-don-owl";
+      var owl = document.getElementById("owlFlyer");
+      var flip = document.getElementById("owlFlip");
+      var btn = document.getElementById("owlToggle");
+      if (!owl || !btn) return;
+      var enabled = true;
+      try { enabled = localStorage.getItem(KEY) !== "off"; } catch(e){}
+      var reduced = false;
+      try { reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch(e){}
+
+      var raf = null, last = 0;
+      var x = 0, y = 0, vx = 0, vy = 0, tx = 0, ty = 0, facing = 1;
+      var mode = "fly"; // "fly" | "perch"
+      var perchUntil = 0, nextPerchAt = 0;
+
+      function size(){ return owl.offsetWidth || 64; }
+      function margin(){ return 10; }
+      function pickTarget(){
+        var w = window.innerWidth, h = window.innerHeight, s = size(), m = margin();
+        var maxX = Math.max(m, w - s - m), maxY = Math.max(m, h - s - m);
+        // Keep targets mostly in the upper / middle band and away from the
+        // toggle button corner, but allow full vertical range sometimes.
+        tx = m + Math.random() * Math.max(1, maxX - m);
+        ty = m + Math.random() * Math.max(1, (maxY - m) * (Math.random() < 0.3 ? 1 : 0.72));
+      }
+      function place(){
+        var tilt = Math.max(-9, Math.min(9, vy * 0.10));
+        owl.style.transform = "translate(" + x.toFixed(1) + "px," + y.toFixed(1) + "px)";
+        if (flip) flip.style.transform = "scaleX(" + facing + ") rotate(" + (tilt * facing).toFixed(1) + "deg)";
+      }
+      function startPos(){
+        var w = window.innerWidth, h = window.innerHeight, s = size();
+        x = Math.max(margin(), w - s - 90);
+        y = Math.max(margin(), Math.round(h * 0.16));
+        vx = 0; vy = 0; facing = -1;
+        pickTarget();
+        nextPerchAt = performance.now() + 7000 + Math.random() * 6000;
+        place();
+      }
+      function loop(now){
+        if (!enabled) { raf = null; return; }
+        if (!last) last = now;
+        var dt = Math.min(0.05, (now - last) / 1000); last = now;
+        var s = size(), w = window.innerWidth, h = window.innerHeight, m = margin();
+        var maxX = Math.max(m, w - s - m), maxY = Math.max(m, h - s - m);
+        if (mode === "perch"){
+          // Rest: ease to a stop, sit still a few seconds, then take off.
+          vx *= 0.86; vy *= 0.86;
+          x += vx * dt; y += vy * dt;
+          if (now >= perchUntil){
+            mode = "fly";
+            owl.classList.remove("perched");
+            pickTarget();
+            nextPerchAt = now + 8000 + Math.random() * 7000;
+          }
+        } else {
+          var dx = tx - x, dy = ty - y;
+          var dist = Math.hypot(dx, dy) || 1;
+          if (dist < 14 || (now > nextPerchAt && dist < 190 && Math.random() < 0.012)){
+            // Arrived (or time to rest): sometimes perch, otherwise curve on.
+            if (now > nextPerchAt){
+              mode = "perch";
+              perchUntil = now + 2400 + Math.random() * 2200;
+              owl.classList.add("perched");
+            } else {
+              pickTarget();
+            }
+          } else {
+            // Steer toward the target with capped acceleration -> soft curves.
+            var speed = 88; // px/s cruise
+            var dvx = (dx / dist) * speed, dvy = (dy / dist) * speed;
+            // Gentle sinusoidal wobble perpendicular to travel = curved, lively path.
+            var wob = Math.sin(now / 620) * 16;
+            dvx += (-dy / dist) * wob; dvy += (dx / dist) * wob;
+            var steer = 2.6 * dt;
+            vx += (dvx - vx) * Math.min(1, steer);
+            vy += (dvy - vy) * Math.min(1, steer);
+            x += vx * dt; y += vy * dt;
+            // Bounce off edges: clamp and pick a target back inside.
+            if (x < m){ x = m; vx = Math.abs(vx); pickTarget(); }
+            if (x > maxX){ x = maxX; vx = -Math.abs(vx); pickTarget(); }
+            if (y < m){ y = m; vy = Math.abs(vy); }
+            if (y > maxY){ y = maxY; vy = -Math.abs(vy); }
+            if (vx < -6) facing = -1; else if (vx > 6) facing = 1;
+          }
+        }
+        x = Math.max(m, Math.min(maxX, x));
+        y = Math.max(m, Math.min(maxY, y));
+        place();
+        raf = requestAnimationFrame(loop);
+      }
+      function start(){
+        if (raf || !enabled) return;
+        last = 0;
+        if (reduced){
+          // No flying for reduced-motion users: rest quietly near top-right.
+          startPos(); mode = "perch"; owl.classList.add("perched"); place();
+          return;
+        }
+        raf = requestAnimationFrame(loop);
+      }
+      function stop(){
+        if (raf) cancelAnimationFrame(raf);
+        raf = null;
+      }
+      function apply(){
+        owl.hidden = !enabled;
+        btn.classList.toggle("off", !enabled);
+        btn.setAttribute("aria-pressed", enabled ? "true" : "false");
+        btn.title = enabled ? "Tắt cú mèo" : "Bật cú mèo bay cho vui mắt";
+        if (enabled){ startPos(); start(); } else { stop(); }
+      }
+      btn.addEventListener("click", function(){
+        enabled = !enabled;
+        try { localStorage.setItem(KEY, enabled ? "on" : "off"); } catch(e){}
+        apply();
+      });
+      window.addEventListener("resize", function(){
+        var s = size(), m = margin();
+        x = Math.max(m, Math.min(Math.max(m, window.innerWidth - s - m), x));
+        y = Math.max(m, Math.min(Math.max(m, window.innerHeight - s - m), y));
+        if (enabled) place();
+      });
+      document.addEventListener("visibilitychange", function(){
+        if (document.hidden) stop();
+        else if (enabled && !reduced) start();
+      });
+      apply();
     })();
     </script>
   </body>
