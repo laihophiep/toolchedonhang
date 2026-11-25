@@ -1,1 +1,2941 @@
 
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Che Thông Tin Vận Đơn</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+      :root{
+        color-scheme: light dark;
+        --navy:#0a1a2f;
+        --navy-2:#0e2542;
+        --teal:#0d9488;
+        --teal-dark:#0b7a6e;
+        --teal-soft:#e0f5f1;
+        --bg:#edf1f4;
+        --surface:#ffffff;
+        --surface-2:#f6f8f9;
+        --ink:#17293d;
+        --ink-soft:#4b6076;
+        --line:#d7e0e7;
+        --danger:#c0392b;
+        --warn-bg:#fff7e6;
+        --warn-line:#f0d48a;
+        --warn-ink:#7a5b12;
+        --radius:14px;
+        --shadow:0 10px 30px rgba(10,26,47,.10);
+      }
+      @media (prefers-color-scheme: dark){
+        :root{
+          --bg:#0c141d;
+          --surface:#14222f;
+          --surface-2:#182a3a;
+          --ink:#e8eff5;
+          --ink-soft:#a9bccb;
+          --line:#2a3d4f;
+          --teal-soft:#123a36;
+          --warn-bg:#3a2f14;
+          --warn-line:#6b5518;
+          --warn-ink:#f2d98c;
+          --shadow:0 10px 30px rgba(0,0,0,.45);
+        }
+      }
+      *{box-sizing:border-box}
+      html{scroll-behavior:smooth}
+      body{
+        margin:0;
+        font-family:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
+        background:var(--bg);
+        color:var(--ink);
+        line-height:1.55;
+      }
+      button,[role="button"],select,summary,input:not([type="checkbox"]){min-height:2.25rem}
+      button{font-family:inherit;cursor:pointer}
+      input,select,textarea{font-family:inherit}
+      .wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+
+      /* ---------- Hero ---------- */
+      .hero{
+        background:linear-gradient(160deg,var(--navy) 0%,var(--navy-2) 70%,#103a35 130%);
+        color:#eaf2f8;
+        padding:44px 0 52px;
+      }
+      .hero .badge{
+        display:inline-block;
+        border:1px solid rgba(45,212,191,.55);
+        color:#5eead4;
+        background:rgba(13,148,136,.16);
+        border-radius:999px;
+        padding:5px 14px;
+        font-size:.82rem;
+        font-weight:600;
+        margin-bottom:18px;
+      }
+      .hero h1{
+        margin:0 0 14px;
+        font-size:clamp(1.7rem,4.5vw,2.7rem);
+        line-height:1.18;
+        font-weight:800;
+        max-width:640px;
+      }
+      .hero p.lead{
+        margin:0 0 20px;
+        max-width:620px;
+        color:#c3d3e2;
+        font-size:1.02rem;
+      }
+      .hero ul.checks{list-style:none;margin:0;padding:0;display:grid;gap:9px;max-width:760px}
+      .hero ul.checks li{padding-left:28px;position:relative;color:#dbe7f1;font-size:.95rem}
+      .hero ul.checks li::before{
+        content:"✓";position:absolute;left:0;top:0;color:#2dd4bf;font-weight:800;
+      }
+
+      /* ---------- Upload ---------- */
+      .tool-section{padding:30px 0 8px}
+      .dropzone{
+        background:var(--surface);
+        border:2px dashed #9db4c4;
+        border-radius:var(--radius);
+        padding:38px 20px;
+        text-align:center;
+        box-shadow:var(--shadow);
+        transition:border-color .15s, background .15s;
+      }
+      .dropzone.dragging{border-color:var(--teal);background:var(--teal-soft)}
+      .dropzone .up-arrow{font-size:2rem;color:var(--teal);line-height:1}
+      .dropzone h2{margin:10px 0 4px;font-size:1.15rem}
+      .dropzone p{margin:0 0 18px;color:var(--ink-soft);font-size:.9rem}
+      .btn{
+        border:1px solid var(--line);
+        background:var(--surface);
+        color:var(--ink);
+        border-radius:10px;
+        padding:8px 16px;
+        font-size:.92rem;
+        font-weight:600;
+        display:inline-flex;align-items:center;gap:7px;justify-content:center;
+      }
+      .btn:hover{border-color:var(--teal);color:var(--teal-dark)}
+      .btn.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+      .btn.primary:hover{background:var(--teal-dark);color:#fff}
+      .btn.danger:hover{border-color:var(--danger);color:var(--danger)}
+      .btn:disabled{opacity:.45;cursor:not-allowed}
+      .btn.small{padding:5px 11px;font-size:.85rem;min-height:2rem}
+      .drop-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+      #fileStatus{margin-top:14px;font-size:.88rem;color:var(--ink-soft);min-height:1.3em}
+
+      /* ---------- Editor ---------- */
+      #editor{display:none;margin-top:22px}
+      #editor.on{display:block}
+      .editor-grid{
+        /* --thumb-w is the outer thumbnail width; the label image inside
+           renders 10px narrower (padding + border), i.e. about
+           100 / 160 / 220px for Nhỏ / Vừa / Lớn. */
+        --thumb-w:170px;
+        display:grid;
+        grid-template-columns:calc(var(--thumb-w) + 30px) minmax(0,1fr) 330px;
+        gap:16px;
+        align-items:start;
+      }
+      .editor-grid.thumb-small{--thumb-w:110px}
+      .editor-grid.thumb-medium{--thumb-w:170px}
+      .editor-grid.thumb-large{--thumb-w:230px}
+      .pages-panel{grid-column:1;grid-row:1}
+      .stage-panel{grid-column:2;grid-row:1}
+      .control-panel{grid-column:3;grid-row:1}
+      .panel{
+        background:var(--surface);
+        border:1px solid var(--line);
+        border-radius:var(--radius);
+        padding:16px;
+        box-shadow:var(--shadow);
+      }
+      .panel h3{margin:0 0 10px;font-size:.98rem;font-weight:700}
+      .panel h3:not(:first-child){margin-top:20px}
+      .panel .hint{font-size:.82rem;color:var(--ink-soft);margin:6px 0 0}
+      .seg{display:flex;flex-wrap:wrap;gap:6px}
+      .seg button{
+        flex:1 1 auto;
+        border:1px solid var(--line);
+        background:var(--surface-2);
+        border-radius:9px;
+        padding:7px 8px;
+        font-size:.85rem;
+        font-weight:600;
+        color:var(--ink);
+        display:inline-flex;align-items:center;gap:6px;justify-content:center;
+      }
+      .seg button.active{border-color:var(--teal);background:var(--teal-soft);color:var(--teal-dark)}
+      .swatch{width:14px;height:14px;border-radius:3px;border:1px solid rgba(0,0,0,.25);display:inline-block;flex:none}
+      .sw-black{background:#111}
+      .sw-white{background:#fff}
+      .sw-blur{background:linear-gradient(90deg,#7fb2d9,#d97f7f);filter:blur(1px)}
+      .sw-pixel{background:conic-gradient(#888 25%,#ccc 0 50%,#888 0 75%,#ccc 0);background-size:6px 6px}
+      .stack{display:grid;gap:8px}
+      .stack .btn{width:100%}
+      .switch-row{
+        display:flex;align-items:center;gap:10px;
+        padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);
+      }
+      .switch-row label{flex:1;font-size:.9rem;font-weight:600;cursor:pointer;padding:4px 0}
+      .switch-row input[type="checkbox"]{width:22px;height:22px;accent-color:var(--teal);flex:none}
+      .field{display:grid;gap:5px;margin-bottom:10px}
+      .field label{font-size:.85rem;font-weight:600}
+      .field input[type="text"],.field input[type="number"],.field select{
+        border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:.95rem;
+        background:var(--surface);color:var(--ink);width:100%;
+      }
+      .template-item{
+        display:flex;align-items:center;gap:8px;
+        border:1px solid var(--line);border-radius:10px;padding:7px 10px;background:var(--surface-2);
+      }
+      .template-item .tname{flex:1;font-size:.9rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .template-empty{font-size:.85rem;color:var(--ink-soft)}
+
+      .stage-panel{padding:14px}
+      .stage-head{
+        display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;
+      }
+      .stage-head .page-label{font-weight:700;font-size:.95rem}
+      .stage-head .spacer{flex:1}
+      .canvas-wrap{
+        position:relative;
+        background:#5b6b7a;
+        background-image:radial-gradient(rgba(255,255,255,.14) 1px,transparent 1px);
+        background-size:14px 14px;
+        border-radius:10px;
+        padding:14px;
+        display:block;text-align:center;
+        overflow-x:auto;overflow-y:hidden;
+      }
+      #stage{
+        background:#fff;
+        box-shadow:0 6px 24px rgba(0,0,0,.35);
+        max-width:100%;
+        touch-action:none;
+        cursor:crosshair;
+        display:block;
+        margin:0 auto;
+      }
+      #stage.note-mode{cursor:text}
+      #stage.select-mode{cursor:default}
+      #selChip{
+        position:absolute;display:none;z-index:5;
+        background:var(--danger);color:#fff;border:none;border-radius:8px;
+        font-size:.8rem;font-weight:700;padding:6px 10px;min-height:2rem;
+        box-shadow:0 4px 12px rgba(0,0,0,.3);
+      }
+      #stripEditBtn{
+        position:absolute;display:none;z-index:7;
+        background:var(--teal);color:#fff;border:2px solid #fff;border-radius:999px;
+        font-size:.82rem;font-weight:700;padding:7px 13px;min-height:2.1rem;
+        box-shadow:0 6px 16px rgba(0,0,0,.35);white-space:nowrap;cursor:pointer;
+      }
+      #stripEditBtn:hover{background:var(--teal-dark)}
+      .strip-card.highlight{
+        border-color:var(--teal);background:var(--surface);
+        box-shadow:0 0 0 3px var(--teal-soft),0 8px 22px rgba(13,148,136,.22);
+      }
+      @keyframes stripFlash{0%{box-shadow:0 0 0 0 rgba(13,148,136,.55)}100%{box-shadow:0 0 0 14px rgba(13,148,136,0)}}
+      .strip-card.flash{animation:stripFlash .9s ease-out 2}
+      #stripHint{
+        margin-top:10px;padding:9px 12px;border:1px dashed var(--teal);border-radius:9px;
+        background:var(--teal-soft);color:var(--ink);font-size:.86rem;font-weight:600;
+      }
+      #noteInput{
+        position:absolute;display:none;z-index:6;
+        border:2px solid var(--teal);border-radius:8px;padding:6px 9px;
+        font-size:15px;font-weight:700;color:#b91c1c;background:#fffef5;min-width:170px;
+      }
+      .thumbs{
+        display:flex;gap:9px;flex-wrap:wrap;margin-top:12px;
+      }
+      .thumb{
+        border:2px solid var(--line);border-radius:8px;padding:3px;background:var(--surface);
+        cursor:pointer;line-height:0;min-height:0;
+      }
+      .thumb.active{border-color:var(--teal)}
+      .thumb canvas{border-radius:4px;display:block}
+      .thumb .tlabel{display:block;font-size:.7rem;line-height:1.3;text-align:center;color:var(--ink-soft);padding-top:3px}
+
+      /* ---------- Page list column ---------- */
+      .pages-panel{padding:12px;position:sticky;top:14px}
+      .pages-panel h3{letter-spacing:.04em;margin-bottom:8px}
+      .pages-head{
+        position:sticky;top:0;z-index:4;background:var(--surface);
+        padding-bottom:8px;margin-bottom:2px;
+      }
+      .thumb-size-seg{display:flex;gap:5px}
+      .thumb-size-seg button{
+        flex:1 1 0;border:1px solid var(--line);background:var(--surface-2);
+        border-radius:8px;padding:5px 4px;font-size:.8rem;font-weight:700;
+        color:var(--ink);min-height:2rem;line-height:1.2;
+      }
+      .thumb-size-seg button:hover{border-color:var(--teal)}
+      .thumb-size-seg button.active{border-color:var(--teal);background:var(--teal-soft);color:var(--teal-dark)}
+      .thumbs-v{display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 210px);min-height:120px;overflow-y:auto;overflow-x:hidden;padding:2px;align-items:center;scrollbar-gutter:stable}
+      .thumb-v{
+        position:relative;border:2px solid var(--line);border-radius:8px;padding:3px;
+        background:var(--surface);cursor:pointer;line-height:0;width:var(--thumb-w);flex:none;
+      }
+      .thumb-v.active{border-color:var(--teal)}
+      .thumb-v canvas{width:100%;height:auto;border-radius:4px;display:block}
+      .thumb-v .tlabel{display:block;font-size:.74rem;line-height:1.35;text-align:center;color:var(--ink-soft);padding-top:3px;font-weight:600}
+      .thumb-actions{position:absolute;top:6px;right:6px;display:none;gap:5px;z-index:3}
+      .thumb-v:hover .thumb-actions,.thumb-v:focus-within .thumb-actions{display:flex}
+      .thumb-actions button{
+        width:26px;height:26px;min-height:26px;border-radius:7px;border:1px solid #c3ced8;
+        background:#fff;color:#263645;font-size:.9rem;line-height:1;
+        display:flex;align-items:center;justify-content:center;padding:0;
+        box-shadow:0 2px 6px rgba(0,0,0,.28);
+      }
+      .thumb-actions button.del{background:#e02424;border-color:#e02424;color:#fff;font-weight:700}
+
+      /* ---------- Stage toolbar ---------- */
+      .toolbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+      .tool-btn{
+        border:1px solid var(--line);background:var(--surface-2);border-radius:9px;
+        padding:6px 11px;font-size:.86rem;font-weight:600;color:var(--ink);
+        display:inline-flex;align-items:center;gap:6px;justify-content:center;min-height:2.1rem;
+      }
+      .tool-btn:hover{border-color:var(--teal)}
+      .tool-btn.active{border-color:var(--teal);background:var(--teal-soft);color:var(--teal-dark)}
+      .tool-btn:disabled{opacity:.4;cursor:not-allowed}
+      .toolbar .spacer{flex:1}
+      .zoom-label{font-weight:700;font-size:.88rem;min-width:48px;text-align:center}
+      .hint-line{font-size:.82rem;color:var(--ink-soft);margin:2px 0}
+
+      /* ---------- Selection info & strips ---------- */
+      .sel-scope{display:grid;gap:6px;margin:10px 0}
+      .sel-scope label{display:flex;gap:8px;align-items:center;font-size:.88rem;font-weight:500;cursor:pointer;padding:2px 0}
+      .sel-scope input[type="radio"]{width:18px;height:18px;accent-color:var(--teal)}
+      .strip-card{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface-2);margin-bottom:10px}
+      .strip-head{display:flex;align-items:center;margin-bottom:8px}
+      .strip-head strong{flex:1;font-size:.92rem}
+      .strip-del{
+        width:26px;height:26px;min-height:26px;border-radius:7px;border:1px solid var(--line);
+        background:var(--surface);color:var(--danger);font-size:1rem;font-weight:700;line-height:1;
+        display:flex;align-items:center;justify-content:center;padding:0;
+      }
+      .strip-del:hover{border-color:var(--danger)}
+      .strip-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+      .strip-grid .field{margin-bottom:0}
+      .strip-card select,.strip-card input[type="text"],.strip-card input[type="number"]{
+        border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:.95rem;
+        background:var(--surface);color:var(--ink);width:100%;
+      }
+      .color-row{display:flex;gap:16px;align-items:flex-end;margin-top:8px}
+      .color-field{display:grid;gap:5px}
+      .color-field label{font-size:.85rem;font-weight:600}
+      input[type="color"]{width:46px;height:34px;min-height:34px;border:1px solid var(--line);border-radius:8px;padding:2px;background:var(--surface);cursor:pointer}
+      .link-btn{
+        background:none;border:none;color:var(--teal-dark);text-decoration:underline;
+        font-size:.88rem;font-weight:600;padding:5px 0;min-height:0;display:block;text-align:left;
+      }
+
+      .warn{
+        background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-ink);
+        border-radius:10px;padding:10px 13px;font-size:.87rem;margin-top:12px;
+      }
+
+      /* ---------- Info sections ---------- */
+      .info{padding:44px 0 6px}
+      .info h2{font-size:clamp(1.35rem,3vw,1.8rem);margin:0 0 14px;font-weight:800}
+      .info p{max-width:820px;color:var(--ink-soft)}
+      .info ul{max-width:820px;color:var(--ink-soft);padding-left:20px}
+      .info ul li{margin-bottom:8px}
+      .info ul strong{color:var(--ink)}
+      .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:20px}
+      .step{
+        background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+        padding:18px;box-shadow:var(--shadow);
+      }
+      .step h3{margin:0 0 8px;font-size:1rem}
+      .step p{margin:0;font-size:.9rem}
+      .cmp-table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-top:16px}
+      .cmp-table th,.cmp-table td{border:1px solid var(--line);padding:11px 14px;text-align:left;font-size:.92rem;vertical-align:top}
+      .cmp-table th{background:var(--surface-2)}
+      .cmp-table td:first-child{font-weight:700;white-space:nowrap}
+      .table-scroll{overflow-x:auto}
+      footer{
+        margin-top:48px;padding:22px 0 30px;border-top:1px solid var(--line);
+        color:var(--ink-soft);font-size:.87rem;
+      }
+
+      /* ---------- Modal & toast ---------- */
+      #modalBk{
+        position:fixed;inset:0;background:rgba(6,17,30,.55);display:none;z-index:50;
+        align-items:center;justify-content:center;padding:18px;
+      }
+      #modalBk.on{display:flex}
+      .modal{
+        background:var(--surface);color:var(--ink);border-radius:16px;max-width:440px;width:100%;
+        padding:22px;box-shadow:0 24px 60px rgba(0,0,0,.35);
+      }
+      .modal h3{margin:0 0 8px;font-size:1.1rem}
+      .modal p{margin:0 0 16px;color:var(--ink-soft);font-size:.93rem}
+      .modal .row{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+      #toast{
+        position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+        background:#10222f;color:#eaf4f1;border-radius:10px;padding:11px 18px;font-size:.9rem;font-weight:600;
+        opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:60;max-width:92vw;text-align:center;
+        box-shadow:0 10px 30px rgba(0,0,0,.35);
+      }
+      #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+      @media (max-width:1080px){
+        .editor-grid{grid-template-columns:calc(var(--thumb-w) + 28px) minmax(0,1fr) 300px}
+      }
+      @media (max-width:900px){
+        .editor-grid{grid-template-columns:1fr}
+        .editor-grid.thumb-small{--thumb-w:86px}
+        .editor-grid.thumb-medium{--thumb-w:114px}
+        .editor-grid.thumb-large{--thumb-w:150px}
+        .pages-panel{grid-column:1;grid-row:1;position:static}
+        .stage-panel{grid-column:1;grid-row:2}
+        .control-panel{grid-column:1;grid-row:3}
+        .pages-head{position:static}
+        .thumbs-v{flex-direction:row;flex-wrap:nowrap;max-height:none;min-height:0;overflow-x:auto;overflow-y:hidden;align-items:flex-start;padding-bottom:8px}
+        .thumb-v{width:var(--thumb-w);flex:none}
+        .thumb-actions{display:flex}
+        .canvas-wrap{padding:8px}
+        .cmp-table td:first-child{white-space:normal}
+      }
+
+
+      /* ---------- Print preview ---------- */
+      .mini-sheet-wrap{
+        position:relative;background:#fff;border:1px solid var(--line);border-radius:8px;
+        overflow:hidden;margin-top:10px;box-shadow:0 4px 14px rgba(10,26,47,.12);
+      }
+      .mini-sheet-wrap img{display:block;width:100%;height:100%;object-fit:fill}
+      .safe-overlay{position:absolute;border:1.5px dashed #e11d48;pointer-events:none;border-radius:2px}
+      #previewBk{
+        position:fixed;inset:0;background:rgba(6,17,30,.62);display:none;z-index:55;
+        align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;
+      }
+      #previewBk.on{display:flex}
+      .preview-modal{
+        background:var(--surface);color:var(--ink);border-radius:16px;max-width:860px;width:100%;
+        padding:20px;box-shadow:0 24px 60px rgba(0,0,0,.35);margin:auto 0;
+      }
+      .preview-modal h3{margin:0 0 4px;font-size:1.12rem}
+      .preview-nav{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:12px 0}
+      .preview-nav .sheet-label{font-weight:700;font-size:.92rem}
+      .preview-sheet-wrap{
+        position:relative;background:#fff;border:1px solid var(--line);border-radius:6px;
+        overflow:hidden;margin:0 auto;box-shadow:0 8px 26px rgba(10,26,47,.18);max-width:100%;
+      }
+      .preview-sheet-wrap img{display:block;width:100%;height:100%;object-fit:fill}
+      .preview-warn{
+        background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-ink);
+        border-radius:10px;padding:9px 12px;font-size:.87rem;margin-top:12px;display:none;
+      }
+      .preview-ok{
+        background:var(--teal-soft);border:1px solid var(--teal);color:var(--ink);
+        border-radius:10px;padding:9px 12px;font-size:.87rem;margin-top:12px;display:none;
+      }
+
+      /* ---------- Print ---------- */
+      #printArea{display:none}
+      @media print{
+        body>*{display:none !important}
+        body>#printArea{display:block !important}
+        #printArea .p-page{
+          page-break-after:always;break-after:page;
+          box-sizing:border-box;
+        }
+        #printArea .p-cell{display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:0;min-width:0}
+        #printArea .p-page:last-child{page-break-after:auto;break-after:auto}
+        #printArea img{max-width:100%;max-height:100%;object-fit:contain}
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="wrap">
+        <span class="badge">Miễn phí · File không rời khỏi máy bạn</span>
+        <h1>Che thông tin &amp; chỉnh sửa PDF vận đơn hàng loạt</h1>
+        <p class="lead">Tải file vận đơn PDF hoặc ảnh nhãn lên, che tên sản phẩm hoặc thông tin nhạy cảm, in mã vận đơn cỡ lớn cho camera dễ đọc — vẽ một lần là áp cho cả trăm đơn cùng lúc, rồi in ra hoặc tải về.</p>
+        <ul class="checks">
+          <li>Che tên sản phẩm tự động: công cụ tự đọc chữ trên nhãn (lớp chữ sẵn có trong file PDF, hoặc nhận diện chữ trên ảnh), tìm bảng sản phẩm và đặt ô che vừa đúng số dòng thật — tên sản phẩm dài nhiều dòng thì che kín tới dòng cuối cùng, tên ngắn một dòng thì ô che ngắn lại, không che thừa xuống chân trang; đơn 1 trang hay nhiều trang đều tự xử lý riêng từng trang</li>
+          <li>Nhiều dải chữ và mã quanh nhãn — cạnh trái, cạnh phải, mép trên hay mép dưới: chữ nhắc khách in cỡ lớn (mặc định “VUI LÒNG QUAY VIDEO KHI MỞ KIỆN HÀNG” ở hai cạnh bên) hoặc mã đơn hàng, mã vận đơn tự đọc trên nhãn, in dạng chữ lớn, mã vạch hay mã QR; chỉnh được vị trí, độ dày, màu chữ và màu nền từng dải</li>
+          <li>In mã vận đơn cỡ lớn ở mép nhãn — dạng chữ lớn và mã vạch Code 128 lớn để máy quét bắt được từ xa</li>
+          <li>Thu nhỏ nhãn chừa lề nên dải mã không đè lên nội dung và máy in không cắt cụt mã</li>
+          <li>Giữ nguyên khổ của file hoặc đổi sang A4, A5, A6, nhãn 100×150mm hay 75×100mm; ghép 2 hoặc 4 nhãn trên một tờ khi cần — có xem trước bản in đúng tỉ lệ từng tờ (kèm đường lề an toàn) trước khi in, và xuất được tất cả thành một file PDF duy nhất, mỗi trang PDF đúng kích thước mm của khổ đã chọn</li>
+          <li>Xoay hoặc xóa từng trang ngay trên danh sách thumbnail — bản in và ảnh tải về chỉ gồm các trang bạn giữ lại</li>
+          <li>Chạy hoàn toàn trong trình duyệt — vận đơn không hề được tải lên máy chủ nào</li>
+        </ul>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="tool-section" aria-label="Công cụ che thông tin vận đơn">
+        <div class="dropzone" id="dropzone">
+          <div class="up-arrow" aria-hidden="true">⬆</div>
+          <h2>Kéo thả file vận đơn PDF hoặc ảnh nhãn vào đây</h2>
+          <p>Nhận PDF và ảnh (JPG, PNG) — chọn nhiều file cùng lúc, các trang sẽ gộp thành một danh sách để xử lý chung</p>
+          <div class="drop-actions">
+            <button class="btn primary" id="pickBtn" type="button">Chọn file từ máy</button>
+            <button class="btn" id="sampleBtn" type="button">Dùng thử nhãn mẫu 2 trang</button>
+            <button class="btn" id="sample1Btn" type="button">Dùng thử nhãn mẫu 1 trang</button>
+          </div>
+          <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png" multiple hidden />
+          <div id="fileStatus" role="status"></div>
+        </div>
+
+        <div id="editor">
+          <div class="editor-grid thumb-medium" id="editorGrid">
+            <!-- ======= Page list ======= -->
+            <aside class="panel pages-panel" aria-label="Danh sách trang">
+              <div class="pages-head">
+                <h3 id="pagesTitle">0 TRANG</h3>
+                <div class="thumb-size-seg" id="thumbSizeSeg" role="group" aria-label="Kích thước hiển thị thumbnail trang">
+                  <button type="button" data-tsize="small">Nhỏ</button>
+                  <button type="button" data-tsize="medium" class="active">Vừa</button>
+                  <button type="button" data-tsize="large">Lớn</button>
+                </div>
+                <p class="hint" style="margin:5px 0 0">Cỡ ảnh trang: Nhỏ ≈100px · Vừa ≈160px · Lớn ≈220px. Chọn Lớn để đọc rõ mã vạch, chữ COD, mã đơn và tên người nhận.</p>
+              </div>
+              <div class="thumbs-v" id="thumbs"></div>
+              <p class="hint">Di chuột lên một trang để hiện nút xoay (↻) và nút xóa trang (×).</p>
+            </aside>
+
+            <!-- ======= Control panel ======= -->
+            <aside class="panel control-panel" aria-label="Bảng điều khiển">
+              <div id="selInfo">
+                <h3 id="selTitle">Chưa chọn ô nào</h3>
+                <p class="hint" id="selDesc" style="margin-top:0">Vẽ một ô che lên tên sản phẩm ở trang này. Mặc định ô sẽ được áp cho <strong>tất cả các trang</strong> — bạn có thể đổi lại thành chỉ một trang sau khi chọn nó.</p>
+                <div id="selControls" style="display:none">
+                  <div class="sel-scope" role="radiogroup" aria-label="Phạm vi áp dụng của mục đã chọn">
+                    <label><input type="radio" name="selScope" value="all" /> Áp cho tất cả các trang</label>
+                    <label><input type="radio" name="selScope" value="this" /> Chỉ trang này</label>
+                  </div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <button class="btn small" type="button" id="dupBtn">Nhân đôi (Ctrl+D)</button>
+                    <button class="btn small danger" type="button" id="delSelBtn">Xóa ô (Delete)</button>
+                  </div>
+                </div>
+              </div>
+
+              <h3>Kiểu che khi vẽ</h3>
+              <div class="seg" id="styleSeg">
+                <button type="button" data-style="black" class="active"><span class="swatch sw-black"></span>Đen</button>
+                <button type="button" data-style="white"><span class="swatch sw-white"></span>Trắng</button>
+                <button type="button" data-style="blur"><span class="swatch sw-blur"></span>Làm mờ</button>
+                <button type="button" data-style="pixel"><span class="swatch sw-pixel"></span>Mosaic</button>
+              </div>
+              <p class="hint">Kéo chuột trên nhãn để vẽ ô. Kéo ô đã vẽ để di chuyển, bấm vào ô để chọn rồi xóa, nhấp đúp để xóa ngay. Ctrl+Z để hoàn tác.</p>
+
+              <h3>Che nhanh</h3>
+              <p class="hint" style="margin:0 0 6px">Nhận diện: <strong id="carrierName">Chưa nhận diện được</strong></p>
+              <p class="hint" style="margin:0 0 10px">Đọc được chữ trên vận đơn — bấm một cái là che đúng chỗ, mọi trang.</p>
+              <div class="stack">
+                <button class="btn" type="button" data-quick="product">Che tên sản phẩm (tự động)</button>
+                <button class="btn" type="button" data-quick="cod">Che tiền thu hộ</button>
+                <button class="btn" type="button" data-quick="phone">Che số điện thoại</button>
+              </div>
+              <p class="hint">“Che tên sản phẩm” chạy tự động: công cụ đọc chữ trên từng trang (PDF thì dùng lớp chữ sẵn có; ảnh thì nhận diện chữ — lần đầu cần mạng để tải bộ nhận diện, sau đó trình duyệt nhớ lại), tìm dòng tiêu đề “Product Name” rồi che toàn bộ các dòng sản phẩm bên dưới — cả 4 cột tên hàng, SKU, Seller SKU và số lượng — cho tới dòng “Qty Total” hoặc chân trang. Tên sản phẩm dài hay ngắn, ô che tự co giãn theo đúng số dòng thật; phần bảng tràn sang trang sau cũng được nhận diện riêng trên trang đó. Ô che hiện ra vẫn kéo chỉnh, xóa, hoàn tác được như thường; trang nào không đọc được chữ, công cụ sẽ báo rõ để bạn tự vẽ tay. Hai nút còn lại đặt ô che ở vị trí thường gặp — kéo thả lại cho khớp với nhãn của bạn.</p>
+              <p class="hint" id="detectStatus" role="status"></p>
+
+              <h3>Phạm vi áp dụng</h3>
+              <div class="switch-row">
+                <label for="applyAll">Áp cho tất cả các trang</label>
+                <input type="checkbox" id="applyAll" checked aria-label="Áp cho tất cả các trang" />
+              </div>
+              <p class="hint">Bật: mọi ô che và ghi chú hiện trên mọi trang (vận đơn cùng sàn có bố cục giống nhau). Tắt: chỉ áp cho trang đang xem — khi đó dùng nút “Sao chép ô che sang trang sau” phía trên nhãn để copy ô che của trang này sang trang kế tiếp rồi chỉnh riêng từng trang. Ngoại lệ: ô che do “Che tên sản phẩm (tự động)” tạo ra luôn ghim đúng trang của nó — mỗi trang một ô vừa với bảng sản phẩm trên chính trang đó — dù công tắc này bật hay tắt.</p>
+
+              <div class="stack" style="margin-top:12px">
+                <button class="btn" type="button" id="undoBtn">↩ Hoàn tác (Ctrl+Z)</button>
+                <button class="btn danger" type="button" id="clearBtn">Xóa hết ô che &amp; ghi chú</button>
+              </div>
+
+              <h3>In mã cỡ lớn lên vận đơn</h3>
+              <div class="field">
+                <label for="codeInput">Mã vận đơn</label>
+                <input type="text" id="codeInput" placeholder="Ví dụ: SPXVN05214879631" autocomplete="off" />
+              </div>
+              <div class="switch-row" style="margin-bottom:8px">
+                <label for="bigCodeOn">In dải mã ở mép dưới nhãn</label>
+                <input type="checkbox" id="bigCodeOn" aria-label="In dải mã ở mép dưới nhãn" />
+              </div>
+              <div class="field">
+                <label for="codePlace">Cách đặt dải</label>
+                <select id="codePlace">
+                  <option value="overlay">Đè lên mép nhãn</option>
+                  <option value="shrink" selected>Thu nhỏ nhãn chừa lề</option>
+                </select>
+              </div>
+              <p class="hint" id="codePlaceNote" style="margin:-4px 0 10px">Nhãn thu nhỏ lại, dải nằm ở lề riêng bên dưới — không che mất nội dung nào của vận đơn.</p>
+              <div class="field">
+                <label for="codeType">Dạng hiển thị</label>
+                <select id="codeType">
+                  <option value="both">Chữ lớn + mã vạch</option>
+                  <option value="text">Chỉ chữ lớn</option>
+                  <option value="barcode">Chỉ mã vạch Code 128</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="safeMargin">Lề an toàn (mm)</label>
+                <input type="number" id="safeMargin" value="2.8" step="0.1" min="0" max="10" />
+              </div>
+              <p class="hint">Khi in, trang được chừa một vòng trắng quanh mép bằng đúng lề an toàn này để máy in không cắt cụt dải mã.</p>
+
+              <h3 id="stripsHeading">CHỮ DỌC BÊN SƯỜN</h3>
+              <p class="hint" style="margin:-4px 0 10px">Đây là phần chữ đỏ chạy dọc hai bên sườn nhãn. Cách nhanh nhất: <strong>bấm thẳng vào dải chữ trên nhãn</strong> (hoặc nút “✎ Sửa dải này” hiện khi di chuột lên dải) — thẻ cài đặt của đúng dải đó sẽ được tô sáng ở ngay dưới đây. Mỗi dải chỉnh được nội dung chữ, cỡ chữ, màu chữ, màu nền, vị trí và độ dày.</p>
+              <div id="stripsList"></div>
+              <button class="btn" type="button" id="addStripBtn" style="width:100%">+ Thêm dải</button>
+              <button class="link-btn" type="button" id="applyCodesBtn">Áp mã này cho các trang còn trống</button>
+              <button class="link-btn" type="button" id="rescanBtn">Quét lại tất cả</button>
+              <p class="hint">Mỗi dải nằm ở một mép của tờ nhãn: chữ tự nhập in cỡ lớn (dải ở cạnh bên thì in dọc, ở mép trên/dưới thì in ngang) hoặc mã quét được — mã đơn hàng / mã vận đơn tự đọc từ chữ trên từng trang, in dạng chữ cỡ lớn, mã vạch hay mã QR. Hai dải mặc định là dòng “VUI LÒNG QUAY VIDEO KHI MỞ KIỆN HÀNG” ở hai cạnh bên; bấm × trên thẻ để bỏ dải không cần — dải sẽ biến mất khỏi cả xem trước, ảnh PNG tải về và bản in.</p>
+
+              <h3>Khổ giấy in</h3>
+              <div class="strip-grid">
+                <div class="field">
+                  <label for="paperSel">Khổ giấy</label>
+                  <select id="paperSel">
+                    <option value="file" selected>Giữ khổ của file</option>
+                    <option value="a4">A4</option>
+                    <option value="a5">A5</option>
+                    <option value="a6">A6 (105×148mm)</option>
+                    <option value="label100">Nhãn 100×150mm</option>
+                    <option value="label75">Nhãn 75×100mm</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="nupSel">Ghép nhãn</label>
+                  <select id="nupSel">
+                    <option value="1" selected>1 nhãn mỗi tờ</option>
+                    <option value="2">2 nhãn mỗi tờ</option>
+                    <option value="4">4 nhãn mỗi tờ</option>
+                  </select>
+                </div>
+              </div>
+              <p class="hint">Giữ khổ của file thì in khỏi phải chỉnh máy in — đổi khổ giấy mới là nguyên nhân in ra bị lệch hoặc mất mép.</p>
+              <div id="miniPreview">
+                <div class="mini-sheet-wrap" id="miniSheetWrap" style="aspect-ratio:100/150">
+                  <img id="miniSheetImg" alt="Xem trước tờ in đầu tiên theo khổ giấy đã chọn" />
+                  <div class="safe-overlay" id="miniSafe"></div>
+                </div>
+                <p class="hint" id="miniInfo" style="margin-top:6px">Xem trước tờ đầu tiên — đúng tỉ lệ khổ giấy đã chọn, viền đứt nét đỏ là lề an toàn.</p>
+                <button class="btn" type="button" id="openPreviewBtn" style="width:100%">👁 Xem trước bản in</button>
+              </div>
+
+              <h3>Mẫu đã lưu</h3>
+              <div class="field">
+                <label for="tplName">Tên mẫu</label>
+                <div style="display:flex;gap:8px">
+                  <input type="text" id="tplName" value="Vận đơn Shopee" style="flex:1;min-width:0" />
+                  <button class="btn primary" type="button" id="saveTplBtn">Lưu</button>
+                </div>
+              </div>
+              <p class="hint" style="margin-top:0">Lưu vị trí các ô che để dùng lại cho các file vận đơn sau.</p>
+              <div class="stack" id="tplList" style="margin-top:10px"></div>
+              <p class="hint">Mẫu được lưu ngay trong trình duyệt này. Lần sau tải file mới lên, bấm vào mẫu là các ô che đặt lại đúng vị trí.</p>
+            </aside>
+
+            <!-- ======= Stage ======= -->
+            <section class="panel stage-panel" aria-label="Khu vực chỉnh sửa nhãn">
+              <div class="stage-head">
+                <span class="page-label" id="pageLabel">Trang 1 / 1</span>
+                <span class="spacer"></span>
+                <button class="btn small" type="button" id="prevPageBtn">← Trang trước</button>
+                <button class="btn small" type="button" id="nextPageBtn">Trang sau →</button>
+                <button class="btn small" type="button" id="copyNextBtn">Sao chép ô che sang trang sau</button>
+              </div>
+              <div class="toolbar" role="toolbar" aria-label="Thanh công cụ">
+                <button class="tool-btn" type="button" data-ttool="select">← Chọn</button>
+                <button class="tool-btn active" type="button" data-ttool="black"><span class="swatch sw-black"></span>Che đen</button>
+                <button class="tool-btn" type="button" data-ttool="white"><span class="swatch sw-white"></span>Che trắng</button>
+                <button class="tool-btn" type="button" data-ttool="note"><strong>T</strong> Thêm ghi chú</button>
+                <span class="spacer"></span>
+                <button class="tool-btn" type="button" id="tUndoBtn" title="Hoàn tác (Ctrl+Z)" aria-label="Hoàn tác">↩</button>
+                <button class="tool-btn" type="button" id="tRedoBtn" title="Làm lại (Ctrl+Shift+Z)" aria-label="Làm lại">↪</button>
+                <button class="tool-btn" type="button" id="zoomOutBtn" title="Thu nhỏ" aria-label="Thu nhỏ">−</button>
+                <span class="zoom-label" id="zoomLabel">100%</span>
+                <button class="tool-btn" type="button" id="zoomInBtn" title="Phóng to" aria-label="Phóng to">+</button>
+              </div>
+              <p class="hint-line">Bấm vào một ô để chọn, kéo để di chuyển, kéo góc dưới-phải để đổi kích thước.</p>
+              <p class="hint-line" style="margin-bottom:10px">Phím tắt: 1–4 đổi công cụ · Ctrl+Z hoàn tác · Ctrl+D nhân đôi · Delete xoá ô · mũi tên nhích ô</p>
+              <div class="canvas-wrap" id="canvasWrap">
+                <canvas id="stage" width="700" height="900"></canvas>
+                <button id="selChip" type="button">✕ Xóa mục đã chọn</button>
+                <button id="stripEditBtn" type="button">✎ Sửa dải này</button>
+                <input id="noteInput" type="text" placeholder="Gõ ghi chú rồi Enter…" />
+              </div>
+              <p id="stripHint" role="note">Bấm vào dải chữ đỏ bên sườn để sửa nội dung, màu, cỡ chữ.</p>
+              <h3 style="margin-top:20px">Xuất file</h3>
+              <div class="drop-actions" style="justify-content:flex-start">
+                <button class="btn primary" type="button" id="printBtn">🖨 Chuẩn bị bản in</button>
+                <button class="btn" type="button" id="dlPageBtn">Tải ảnh trang này (PNG)</button>
+                <button class="btn" type="button" id="dlAllBtn">Tải ảnh tất cả trang (PNG)</button>
+                <button class="btn" type="button" id="previewBtn">👁 Xem trước bản in</button>
+                <button class="btn primary" type="button" id="dlPdfBtn">⬇ Tải PDF</button>
+              </div>
+              <p class="hint" id="exportStatus" role="status" style="margin-top:8px"></p>
+              <p class="hint">“Xem trước bản in” dựng tờ giấy đúng khổ đã chọn (kèm đường lề an toàn đứt nét) bằng đúng cơ chế dựng với bản in và file PDF — thấy sao là in ra vậy. “Tải PDF” gộp tất cả trang đã che thành một file PDF duy nhất, mỗi trang PDF đúng kích thước mm của khổ đã chọn, dựng ở 200 DPI để mã vạch vẫn quét được.</p>
+              <div class="warn" id="printHint" style="display:none;background:var(--teal-soft);border-color:var(--teal);color:var(--ink)">🖨 <span id="printHintText">Bản in đã sẵn sàng.</span> Hãy dùng lệnh <strong>In</strong> của trình duyệt (Ctrl+P, hoặc menu → In trên điện thoại): những gì in ra chỉ gồm các nhãn đã che, đúng khổ giấy đã chọn. Nếu bạn sửa thêm ô che, hãy bấm “Chuẩn bị bản in” lại để cập nhật.</div>
+              <div class="warn">⚠ Trước khi in hàng loạt, hãy in thử một tờ để chắc chắn ô che nằm đúng chỗ và dải mã không bị máy in cắt cụt.</div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section class="info" aria-label="Vì sao nên che thông tin">
+        <h2>Vì sao nên che tên sản phẩm trên vận đơn?</h2>
+        <p>Mảnh vận đơn dán ngoài kiện hàng là thứ ai cũng đọc được: nhân viên bưu cục, tài xế, bảo vệ chung cư, người đi ngang qua sảnh. Trên đó thường in đầy đủ tên hàng, số lượng và giá trị đơn. Với nhiều mặt hàng, đó là thông tin không nên phơi ra.</p>
+        <ul>
+          <li><strong>Bảo vệ riêng tư của khách.</strong> Không phải khách nào cũng muốn hàng xóm biết mình mua gì.</li>
+          <li><strong>Giảm rủi ro mất hàng.</strong> Kiện hàng ghi rõ tên món đắt tiền là kiện hàng dễ bị nhắm tới.</li>
+          <li><strong>Giữ kín nguồn hàng.</strong> Đối thủ chỉ cần nhìn vận đơn là biết bạn đang bán mã nào chạy.</li>
+          <li><strong>Thêm ghi chú cho khâu đóng gói.</strong> Dán sẵn “Hàng dễ vỡ” hay “Đã kiểm tra” giúp người đóng gói và shipper không bỏ sót.</li>
+        </ul>
+        <p>Việc chỉnh sửa vận đơn PDF trước giờ vốn phải mở từng file bằng phần mềm nặng rồi sửa tay từng trang. Công cụ này gom cả việc xóa thông tin trên vận đơn và in vận đơn Shopee, TikTok Shop hay Lazada hàng loạt vào một trang web chạy thẳng trong trình duyệt — không cài đặt, không tài khoản, không gửi file đi đâu.</p>
+      </section>
+
+      <section class="info" aria-label="Các bước sử dụng">
+        <h2>Năm bước để xong cả trăm vận đơn</h2>
+        <div class="steps">
+          <div class="step">
+            <h3>1. Tải vận đơn lên</h3>
+            <p>Kéo thả file PDF bạn tải về từ Shopee, TikTok Shop, Lazada hay đơn vị vận chuyển. Chỉ có ảnh chụp màn hình nhãn cũng được — công cụ nhận luôn file JPG, PNG. Nhiều file cùng lúc cũng được, chúng sẽ được gộp thành một danh sách trang.</p>
+          </div>
+          <div class="step">
+            <h3>2. Bấm che nhanh hoặc tự vẽ ô che</h3>
+            <p>Bấm “Che tên sản phẩm (tự động)” là công cụ tự đọc chữ trên nhãn, tìm bảng sản phẩm và đặt ô che vừa đúng số dòng sản phẩm thật — tên dài nhiều dòng che kín tới dòng cuối cùng, tên ngắn một dòng thì ô che không tràn xuống chân trang — trên từng trang riêng, kể cả phần bảng tràn sang trang 2 của đơn TikTok Shop, gồm cả cột số lượng và dòng tổng số lượng. “Che số điện thoại” và “Che tiền thu hộ” đặt ô che ở vị trí thường gặp — kéo lại cho khớp nhãn của bạn. Muốn che chỗ khác thì chọn kiểu Đen, Trắng, Làm mờ hoặc Mosaic rồi kéo chuột vẽ ô; ô che tự động vẫn kéo chỉnh tay được nếu nhận diện lệch. Khi không áp cho tất cả các trang, dùng nút “Sao chép ô che sang trang sau” để copy ô che sang trang kế tiếp.</p>
+          </div>
+          <div class="step">
+            <h3>3. Bật dải in mã vận đơn cỡ lớn</h3>
+            <p>Nếu bạn quay video đóng gói, hãy nhập mã vận đơn rồi bật dải mã ở mép dưới nhãn: chữ thật to kèm mã vạch Code 128 cỡ lớn để máy quét bắt được từ xa. Bật thêm “thu nhỏ nhãn chừa lề” để dải mã không đè lên nội dung.</p>
+          </div>
+          <div class="step">
+            <h3>4. Thêm ghi chú nếu cần</h3>
+            <p>Chọn “Thêm ghi chú”, bấm lên chỗ trống trên vận đơn và gõ nội dung, ví dụ “Hàng dễ vỡ”. Chữ tiếng Việt có dấu hiển thị đầy đủ khi in. Lỡ tay thì Ctrl+Z hoàn tác.</p>
+          </div>
+          <div class="step">
+            <h3>5. Chọn khổ giấy rồi in ra hoặc tải về</h3>
+            <p>Chọn khổ giấy đúng với máy in của bạn — giữ nguyên khổ của file, hoặc A4, A5, A6, nhãn 100×150mm, nhãn 75×100mm, ghép 2 hay 4 nhãn một tờ. Ngay dưới mục khổ giấy có ảnh xem trước tờ đầu tiên đúng tỉ lệ; bấm “Xem trước bản in” để duyệt từng tờ lớn hơn, có đường lề an toàn đứt nét và cảnh báo nếu nhãn chạm lề. Duyệt xong bấm “Chuẩn bị bản in” rồi dùng lệnh In của trình duyệt (Ctrl+P, hoặc menu In trên điện thoại) — những gì thấy trong xem trước là những gì in ra. Muốn lưu file thì bấm “Tải PDF” để gộp tất cả trang đã che thành một file PDF duy nhất đúng khổ đã chọn, hoặc tải từng trang dạng PNG. Trước khi in hàng loạt, nên in thử một tờ để chắc chắn ô che nằm đúng chỗ.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="info" aria-label="Che phủ và xóa hẳn">
+        <h2>Che phủ lên trên hay xóa hẳn nội dung?</h2>
+        <p>Hai cách xuất file khác nhau ở chỗ nội dung gốc còn nằm trong file hay không. Chọn đúng cách tùy vào việc bạn định in ra giấy hay gửi file đi.</p>
+        <div class="table-scroll">
+          <table class="cmp-table">
+            <thead>
+              <tr><th></th><th>Che phủ lên trên (in ra giấy)</th><th>Xóa hẳn nội dung bên dưới (tải ảnh PNG)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>In ra giấy</td><td>Không thấy phần bị che</td><td>Không thấy phần bị che</td></tr>
+              <tr><td>Gửi file đi</td><td>Nếu chỉ phủ một lớp lên file gốc, người nhận vẫn có thể bôi đen copy được chữ bị che</td><td>Chữ bị che biến mất hoàn toàn khỏi file — ảnh PNG đã “nấu chín” lớp che vào ảnh</td></tr>
+              <tr><td>Độ nét mã vạch</td><td>Nét như bản gốc khi in trực tiếp</td><td>Xuất ở độ phân giải cao, máy quét vẫn đọc tốt</td></tr>
+              <tr><td>Dung lượng file</td><td>Nhẹ, in nhanh</td><td>Nặng hơn vì là ảnh</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-top:14px"><strong>Lưu ý quan trọng:</strong> khi in ra giấy, phần bị che đơn giản là không xuất hiện trên tờ giấy. Nhưng nếu bạn gửi file cho người khác, hãy dùng bản <strong>ảnh PNG đã tải về</strong> — nội dung đã che trong ảnh là mất hẳn, không ai khôi phục hay copy lại được. Đừng gửi file gốc kèm lớp phủ nếu nội dung bên dưới cần giữ kín thật sự.</p>
+      </section>
+
+      <footer>
+        Công cụ chạy hoàn toàn trong trình duyệt của bạn: file vận đơn được xử lý ngay trên máy, không tải lên máy chủ, không lưu lại sau khi bạn đóng trang. Mẫu vị trí ô che (nếu bạn lưu) chỉ nằm trong bộ nhớ của trình duyệt này.
+      </footer>
+    </main>
+
+    <div id="printArea" aria-hidden="true"></div>
+
+    <div id="modalBk">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <h3 id="modalTitle">In thử trước một tờ nhé</h3>
+        <p>Trước khi in hàng loạt, nên in thử một tờ để chắc chắn ô che nằm đúng chỗ, dải mã vận đơn không bị cắt cụt và máy quét đọc được. Bạn muốn xem trước in thử trang đầu hay xem trước tất cả luôn? Bản xem trước hiện đúng khổ giấy đã chọn để bạn duyệt trước; duyệt xong bấm “Chuẩn bị in” trong bản xem trước, trang sẽ hướng dẫn bạn mở lệnh In của trình duyệt để in ra.</p>
+        <div class="row">
+          <button class="btn" type="button" id="modalCancel">Để kiểm tra lại</button>
+          <button class="btn" type="button" id="modalOne">Chuẩn bị in 1 trang</button>
+          <button class="btn primary" type="button" id="modalAll">Chuẩn bị in tất cả</button>
+        </div>
+      </div>
+    </div>
+
+    
+    <div id="previewBk">
+      <div class="preview-modal" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+        <h3 id="previewTitle">Xem trước bản in</h3>
+        <p class="hint" style="margin:0">Tờ giấy bên dưới có đúng kích thước và tỉ lệ của khổ đã chọn; nhãn đã che, dải chữ và dải mã lớn nằm đúng vị trí sẽ in ra. Viền đứt nét đỏ là lề an toàn — phần nằm ngoài viền này máy in có thể không in được (đường đứt nét chỉ hiện ở xem trước, không in ra).</p>
+        <div class="preview-nav">
+          <button class="btn small" type="button" id="previewPrevBtn">← Tờ trước</button>
+          <span class="sheet-label" id="previewSheetLabel">Tờ 1 / 1</span>
+          <button class="btn small" type="button" id="previewNextBtn">Tờ sau →</button>
+          <span style="flex:1"></span>
+          <button class="btn small" type="button" id="previewCloseBtn">Đóng</button>
+        </div>
+        <div class="preview-sheet-wrap" id="previewSheetWrap" style="aspect-ratio:100/150">
+          <img id="previewImg" alt="Bản xem trước tờ in" />
+          <div class="safe-overlay" id="previewSafe"></div>
+        </div>
+        <div class="preview-warn" id="previewWarn"></div>
+        <div class="preview-ok" id="previewOk"></div>
+        <div class="preview-nav" style="margin-bottom:0">
+          <span style="flex:1"></span>
+          <button class="btn" type="button" id="previewPdfBtn">⬇ Tải PDF</button>
+          <button class="btn primary" type="button" id="previewPrintBtn">🖨 Chuẩn bị in các tờ này</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" role="status"></div>
+
+    <script>
+    (function(){
+      "use strict";
+      if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      }
+
+      var $ = function(id){ return document.getElementById(id); };
+      var stage = $("stage"), sctx = stage.getContext("2d");
+      var wrap = $("canvasWrap");
+
+      var stripUid = 1;
+      function defaultStrips(){
+        // The old two-side vertical text becomes the first two strips.
+        // Order matters for the labels: Dải 1 = cạnh trái, Dải 2 = cạnh phải,
+        // so clicking the left strip opens card 1 and the right strip card 2.
+        return [
+          { id: stripUid++, pos: "left", thick: 5, content: "text", text: "VUI LÒNG QUAY VIDEO KHI MỞ KIỆN HÀNG", codeSource: "tracking", style: "bigtext", color: "#b91c1c", bg: "#ffffff", textSize: "medium" },
+          { id: stripUid++, pos: "right", thick: 5, content: "text", text: "VUI LÒNG QUAY VIDEO KHI MỞ KIỆN HÀNG", codeSource: "tracking", style: "bigtext", color: "#b91c1c", bg: "#ffffff", textSize: "medium" }
+        ];
+      }
+      function newStrip(){
+        return { id: stripUid++, pos: "right", thick: 5, content: "text", text: "ĐỂ KHIẾU NẠI KHI CÓ SỰ CỐ", codeSource: "order", style: "bigtext", color: "#dc2626", bg: "#ffffff", textSize: "medium" };
+      }
+      function stripPosLabel(pos){
+        return pos === "left" ? "Cạnh trái" : pos === "right" ? "Cạnh phải" : pos === "top" ? "Mép trên" : "Mép dưới";
+      }
+      function stripTextScale(s){
+        return s.textSize === "small" ? 0.72 : s.textSize === "large" ? 1.3 : 1;
+      }
+
+      var state = {
+        pages: [],            // {src: canvas, name: string, lines, orderCode, trackingCode}
+        current: 0,
+        rects: [],            // {id,x,y,w,h,style,page,only,scope,all,autoProd}
+        notes: [],            // {id,x,y,text,page,only,all}
+        applyAll: true,
+        tool: "draw",
+        maskStyle: "black",
+        sel: null,            // {kind:'rect'|'note', id}
+        bigCode: { on:false, code:"", type:"both", place:"shrink" },
+        strips: defaultStrips(),
+        paper: "file",
+        nup: 1,
+        safeMargin: 2.8,
+        zoom: 1,
+        thumbSize: "medium",
+        selectedStripId: null
+      };
+      var uid = 1;
+      var history = [];
+      var redoStack = [];
+
+      /* ---------------- helpers ---------------- */
+      var toastTimer = null;
+      function toast(msg){
+        var t = $("toast"); t.textContent = msg; t.classList.add("on");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function(){ t.classList.remove("on"); }, 3200);
+      }
+      function pushHistory(){
+        history.push(JSON.stringify({rects: state.rects, notes: state.notes}));
+        if (history.length > 60) history.shift();
+        redoStack.length = 0;
+      }
+      function restoreSnapshot(json){
+        var data = JSON.parse(json);
+        state.rects = data.rects; state.notes = data.notes; state.sel = null;
+        render();
+      }
+      function undo(){
+        var last = history.pop();
+        if (!last){ toast("Không còn gì để hoàn tác."); return; }
+        redoStack.push(JSON.stringify({rects: state.rects, notes: state.notes}));
+        restoreSnapshot(last);
+      }
+      function redo(){
+        var nxt = redoStack.pop();
+        if (!nxt){ toast("Không có gì để làm lại."); return; }
+        history.push(JSON.stringify({rects: state.rects, notes: state.notes}));
+        restoreSnapshot(nxt);
+      }
+      // A rect may be pinned to a page range via r.scope:
+      // "first" = only page 1, "rest" = only pages 2+. Needed because on
+      // TikTok Shop / J&T waybills one order spans 2 pages: the product
+      // table starts at the BOTTOM of page 1 and continues at the TOP of
+      // page 2, so one shared position can never cover both halves.
+      function rectAppliesTo(r, pageIdx){
+        if (r.only != null) return pageIdx === r.only;
+        if (r.scope === "first") return pageIdx === 0;
+        if (r.scope === "rest") return pageIdx > 0;
+        if (r.all === true) return true;
+        if (r.all === false) return pageIdx === r.page;
+        return state.applyAll || r.page === pageIdx;
+      }
+      function noteAppliesTo(n, pageIdx){
+        if (n.only != null) return pageIdx === n.only;
+        if (n.all === true) return true;
+        if (n.all === false) return pageIdx === n.page;
+        return state.applyAll || n.page === pageIdx;
+      }
+      function visibleRects(){ return state.rects.filter(function(r){ return rectAppliesTo(r, state.current); }); }
+      function visibleNotes(){ return state.notes.filter(function(n){ return noteAppliesTo(n, state.current); }); }
+      // Layout of one composed page: the label is drawn into `box`; the
+      // bottom strip (big tracking code) and the vertical side texts live
+      // in margins around it, so neither ever covers label content. All
+      // sizes are proportional to outW, so fractions computed at any
+      // outW hold at every other outW (preview and export agree).
+      // Layout of one composed page: the label is drawn into `box`; the
+      // strips (state.strips) live in margins on the four edges and the
+      // big tracking-code strip lives at the bottom, so none of them ever
+      // covers label content (except the big-code strip in "overlay"
+      // placement). All sizes are proportional to outW, so fractions
+      // computed at any outW hold at every other outW (preview and
+      // export agree).
+      function layoutFor(srcW, srcH, outW){
+        var outH = Math.round(outW * srcH / srcW);
+        var showStrip = state.bigCode.on && state.bigCode.code.trim().length > 0;
+        var availH = (showStrip && state.bigCode.place === "shrink") ? Math.round(outH * 0.855) : outH;
+        var mL = 0, mR = 0, mT = 0, mB = 0;
+        state.strips.forEach(function(s){
+          var t = (parseFloat(s.thick) || 0) / 100;
+          if (t <= 0) return;
+          if (s.pos === "left") mL += t * outW;
+          else if (s.pos === "right") mR += t * outW;
+          else if (s.pos === "top") mT += t * outH;
+          else if (s.pos === "bottom") mB += t * outH;
+        });
+        return {
+          outH: outH, availH: availH, showStrip: showStrip,
+          box: {
+            x: Math.round(mL), y: Math.round(mT),
+            w: Math.max(40, Math.round(outW - mL - mR)),
+            h: Math.max(40, Math.round(availH - mT - mB))
+          }
+        };
+      }
+      // Label box of the page being edited, as fractions of the stage.
+      // Pointer math and selection outlines are computed in this box so
+      // they stay correct when strips or the bottom code strip shrink
+      // the label.
+      function currentBoxFrac(){
+        var p = state.pages[state.current];
+        if (!p) return { gx: 0, gy: 0, gw: 1, gh: 1 };
+        var L = layoutFor(p.src.width, p.src.height, 1000);
+        return { gx: L.box.x / 1000, gy: L.box.y / L.outH, gw: L.box.w / 1000, gh: L.box.h / L.outH };
+      }
+      // Bands occupied by the strips, stacked from each edge inward in
+      // array order. Side bands run along the label area (availH); top
+      // and bottom bands span the full page width.
+      function stripBands(L, outW){
+        var bands = [];
+        var lx = 0, rx = outW, ty = 0, by = L.availH;
+        state.strips.forEach(function(s){
+          var t = (parseFloat(s.thick) || 0) / 100;
+          if (t <= 0) return;
+          if (s.pos === "left"){ var w = t * outW; bands.push({ s: s, x: lx, y: 0, w: w, h: L.availH, vert: true }); lx += w; }
+          else if (s.pos === "right"){ var w2 = t * outW; rx -= w2; bands.push({ s: s, x: rx, y: 0, w: w2, h: L.availH, vert: true }); }
+          else if (s.pos === "top"){ var h = t * L.outH; bands.push({ s: s, x: 0, y: ty, w: outW, h: h, vert: false }); ty += h; }
+          else if (s.pos === "bottom"){ var h2 = t * L.outH; by -= h2; bands.push({ s: s, x: 0, y: by, w: outW, h: h2, vert: false }); }
+        });
+        return bands;
+      }
+      // Hit-test a client point against the strip bands drawn on the
+      // stage, so the user can click the red side text itself to edit it.
+      // Returns { s, band } in the 1000-wide layout space, or null.
+      function stripBandAtClient(clientX, clientY){
+        var page = state.pages[state.current];
+        if (!page || !state.strips.length) return null;
+        var r = stage.getBoundingClientRect();
+        if (!r.width || !r.height) return null;
+        if (clientX < r.left || clientX > r.right || clientY < r.top || clientY > r.bottom) return null;
+        var L = layoutFor(page.src.width, page.src.height, 1000);
+        var px = (clientX - r.left) / r.width * 1000;
+        var py = (clientY - r.top) / r.height * L.outH;
+        var bands = stripBands(L, 1000);
+        for (var i = bands.length - 1; i >= 0; i--){
+          var b = bands[i];
+          if (px >= b.x && px <= b.x + b.w && py >= b.y && py <= b.y + b.h) return { s: b.s, band: b };
+        }
+        return null;
+      }
+      var hoverStripId = null;
+      function focusStripCard(id, announce){
+        state.selectedStripId = id;
+        document.querySelectorAll(".strip-card").forEach(function(c){
+          c.classList.toggle("highlight", String(id) === c.getAttribute("data-strip-id"));
+        });
+        var card = document.querySelector('.strip-card[data-strip-id="' + id + '"]');
+        if (card){
+          card.scrollIntoView({ behavior: "smooth", block: "center" });
+          card.classList.remove("flash");
+          // restart the flash animation
+          void card.offsetWidth;
+          card.classList.add("flash");
+          var idx = state.strips.findIndex(function(x){ return x.id === id; });
+          if (announce !== false && idx >= 0){
+            toast("Đang sửa Dải " + (idx + 1) + " — " + stripPosLabel(state.strips[idx].pos) + ": đổi nội dung, cỡ chữ, màu chữ / nền và độ dày ngay trong thẻ được tô sáng ở cột phải.");
+          }
+        }
+      }
+      function stripCodeValue(s, page){
+        var v = "";
+        if (page) v = s.codeSource === "order" ? (page.orderCode || "") : (page.trackingCode || "");
+        if (!v) v = state.bigCode.code.trim();
+        if (!v){
+          for (var i = 0; i < state.pages.length; i++){
+            var cand = s.codeSource === "order" ? state.pages[i].orderCode : state.pages[i].trackingCode;
+            if (cand){ v = cand; break; }
+          }
+        }
+        return v || "";
+      }
+      function drawStripText(ctx, s, b, txt){
+        ctx.fillStyle = s.color || "#b91c1c";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        var scale = stripTextScale(s);
+        if (b.vert){
+          var fp = Math.max(9, b.w * 0.62 * scale);
+          ctx.font = "800 " + fp + "px 'Be Vietnam Pro', Arial, sans-serif";
+          var tw = ctx.measureText(txt).width;
+          var maxLen = b.h * 0.94;
+          if (tw > maxLen && tw > 0){
+            fp = Math.max(8, Math.floor(fp * maxLen / tw));
+            ctx.font = "800 " + fp + "px 'Be Vietnam Pro', Arial, sans-serif";
+          }
+          ctx.save();
+          ctx.translate(b.x + b.w / 2, b.y + b.h / 2);
+          ctx.rotate(s.pos === "left" ? -Math.PI / 2 : Math.PI / 2);
+          ctx.fillText(txt, 0, 0);
+          ctx.restore();
+        } else {
+          var fp2 = Math.max(9, b.h * 0.55 * scale);
+          ctx.font = "800 " + fp2 + "px 'Be Vietnam Pro', Arial, sans-serif";
+          var tw2 = ctx.measureText(txt).width;
+          if (tw2 > b.w * 0.96 && tw2 > 0){
+            fp2 = Math.max(8, Math.floor(fp2 * b.w * 0.96 / tw2));
+            ctx.font = "800 " + fp2 + "px 'Be Vietnam Pro', Arial, sans-serif";
+          }
+          ctx.fillText(txt, b.x + b.w / 2, b.y + b.h / 2);
+        }
+        ctx.textAlign = "left";
+      }
+      function drawQR(ctx, text, cx, cy, size, color){
+        try {
+          if (!window.qrcode) return false;
+          var qr = qrcode(0, "M");
+          qr.addData(text); qr.make();
+          var n = qr.getModuleCount();
+          var cell = size / n;
+          ctx.fillStyle = color || "#000000";
+          for (var r = 0; r < n; r++){
+            for (var c = 0; c < n; c++){
+              if (qr.isDark(r, c)) ctx.fillRect(cx - size / 2 + c * cell, cy - size / 2 + r * cell, Math.ceil(cell), Math.ceil(cell));
+            }
+          }
+          return true;
+        } catch(e){ return false; }
+      }
+      function drawStripCode(ctx, s, b, val){
+        if (s.style === "barcode"){
+          if (b.vert){
+            var bc = barcodeCanvas(val, b.h * 0.72, b.w * 0.82);
+            if (bc){
+              ctx.save();
+              ctx.translate(b.x + b.w / 2, b.y + b.h / 2);
+              ctx.rotate(s.pos === "left" ? -Math.PI / 2 : Math.PI / 2);
+              ctx.drawImage(bc, -bc.width / 2, -bc.height / 2);
+              ctx.restore();
+              return;
+            }
+          } else {
+            var bc2 = barcodeCanvas(val, b.w * 0.62, b.h * 0.8);
+            if (bc2){ ctx.drawImage(bc2, b.x + (b.w - bc2.width) / 2, b.y + b.h * 0.1); return; }
+          }
+          drawStripText(ctx, s, b, val);
+          return;
+        }
+        if (s.style === "qrcode"){
+          var size = b.vert ? Math.min(b.w * 0.94, b.h * 0.5) : Math.min(b.h * 0.92, b.w * 0.4);
+          if (drawQR(ctx, val, b.x + b.w / 2, b.y + b.h / 2, size, s.color)) return;
+          drawStripText(ctx, s, b, val);
+          return;
+        }
+        drawStripText(ctx, s, b, val);
+      }
+      function drawStrips(ctx, page, L, outW){
+        stripBands(L, outW).forEach(function(b){
+          var s = b.s;
+          ctx.save();
+          ctx.fillStyle = s.bg || "#ffffff";
+          ctx.fillRect(b.x, b.y, b.w, b.h);
+          ctx.beginPath(); ctx.rect(b.x, b.y, b.w, b.h); ctx.clip();
+          if (s.content === "code"){
+            var val = stripCodeValue(s, page);
+            if (val) drawStripCode(ctx, s, b, val);
+          } else {
+            var txt = (s.text || "").trim();
+            if (txt) drawStripText(ctx, s, b, txt);
+          }
+          ctx.restore();
+        });
+      }
+
+      /* ---------------- compose (preview + export share this) ---------------- */
+      function drawMask(ctx, src, box, r){
+        var x = box.x + r.x * box.w, y = box.y + r.y * box.h;
+        var w = r.w * box.w, h = r.h * box.h;
+        if (w <= 0 || h <= 0) return;
+        if (r.style === "black"){ ctx.fillStyle = "#0d0d0d"; ctx.fillRect(x, y, w, h); }
+        else if (r.style === "white"){ ctx.fillStyle = "#ffffff"; ctx.fillRect(x, y, w, h); }
+        else if (r.style === "blur"){
+          ctx.save();
+          ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+          try { ctx.filter = "blur(" + Math.max(6, box.w * 0.012) + "px)"; } catch(e){}
+          ctx.drawImage(src, 0, 0, src.width, src.height, box.x, box.y, box.w, box.h);
+          ctx.restore();
+          try { ctx.filter = "none"; } catch(e){}
+        }
+        else if (r.style === "pixel"){
+          var block = Math.max(6, Math.round(box.w * 0.014));
+          var tw = Math.max(1, Math.round(w / block)), th = Math.max(1, Math.round(h / block));
+          var tmp = document.createElement("canvas"); tmp.width = tw; tmp.height = th;
+          var tctx = tmp.getContext("2d");
+          tctx.drawImage(src, r.x * src.width, r.y * src.height, r.w * src.width, r.h * src.height, 0, 0, tw, th);
+          ctx.save(); ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(tmp, 0, 0, tw, th, x, y, w, h);
+          ctx.restore();
+        }
+      }
+
+      function barcodeCanvas(code, targetW, targetH){
+        var c = document.createElement("canvas");
+        try {
+          JsBarcode(c, code, { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2 });
+        } catch(e){ return null; }
+        // scale into target box keeping bars crisp enough
+        var out = document.createElement("canvas");
+        out.width = Math.max(50, Math.round(targetW)); out.height = Math.max(20, Math.round(targetH));
+        var octx = out.getContext("2d");
+        octx.fillStyle = "#fff"; octx.fillRect(0, 0, out.width, out.height);
+        octx.imageSmoothingEnabled = false;
+        octx.drawImage(c, 0, 0, c.width, c.height, 0, 0, out.width, out.height);
+        return out;
+      }
+
+      function compose(pageIdx, outW){
+        var page = state.pages[pageIdx];
+        if (!page) return null;
+        var src = page.src;
+        var L = layoutFor(src.width, src.height, outW);
+        var outH = L.outH, box = L.box;
+        var showStrip = L.showStrip;
+
+        var c = document.createElement("canvas");
+        c.width = outW; c.height = outH;
+        var ctx = c.getContext("2d");
+        ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, outW, outH);
+        ctx.drawImage(src, 0, 0, src.width, src.height, box.x, box.y, box.w, box.h);
+
+        var rects = state.rects.filter(function(r){ return rectAppliesTo(r, pageIdx); });
+        rects.forEach(function(r){ drawMask(ctx, src, box, r); });
+
+        var notes = state.notes.filter(function(n){ return noteAppliesTo(n, pageIdx); });
+        notes.forEach(function(n){ drawNote(ctx, n, box); });
+
+        drawStrips(ctx, page, L, outW);
+
+        if (showStrip){
+          var sy = state.bigCode.place === "shrink" ? L.availH : outH - Math.round(outH * 0.145);
+          var sh = outH - sy;
+          ctx.fillStyle = "#ffffff"; ctx.fillRect(0, sy, outW, sh);
+          ctx.fillStyle = "#111"; ctx.fillRect(0, sy, outW, Math.max(2, outH * 0.004));
+          var code = state.bigCode.code.trim();
+          var type = state.bigCode.type;
+          ctx.fillStyle = "#000"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          if (type === "text"){
+            ctx.font = "800 " + Math.round(sh * 0.52) + "px 'Be Vietnam Pro', Arial, sans-serif";
+            ctx.fillText(code, outW / 2, sy + sh / 2, outW * 0.96);
+          } else if (type === "barcode"){
+            var bc = barcodeCanvas(code, outW * 0.86, sh * 0.78);
+            if (bc) ctx.drawImage(bc, (outW - bc.width) / 2, sy + sh * 0.11);
+          } else {
+            ctx.font = "800 " + Math.round(sh * 0.34) + "px 'Be Vietnam Pro', Arial, sans-serif";
+            ctx.fillText(code, outW / 2, sy + sh * 0.24, outW * 0.96);
+            var bc2 = barcodeCanvas(code, outW * 0.8, sh * 0.5);
+            if (bc2) ctx.drawImage(bc2, (outW - bc2.width) / 2, sy + sh * 0.44);
+          }
+          ctx.textAlign = "left";
+        }
+        return c;
+      }
+
+      function drawNote(ctx, n, box){
+        var fs = Math.max(13, box.w * 0.034);
+        ctx.font = "700 " + fs + "px 'Be Vietnam Pro', Arial, sans-serif";
+        var tw = ctx.measureText(n.text).width;
+        var x = box.x + n.x * box.w, y = box.y + n.y * box.h;
+        ctx.fillStyle = "rgba(255,254,240,.92)";
+        ctx.fillRect(x - 5, y - fs - 4, tw + 10, fs + 10);
+        ctx.strokeStyle = "#b91c1c"; ctx.lineWidth = Math.max(1.5, box.w * 0.002);
+        ctx.strokeRect(x - 5, y - fs - 4, tw + 10, fs + 10);
+        ctx.fillStyle = "#b91c1c"; ctx.textBaseline = "alphabetic";
+        ctx.fillText(n.text, x, y);
+      }
+
+      /* ---------------- editor rendering ---------------- */
+      function render(){
+        var has = state.pages.length > 0;
+        $("editor").classList.toggle("on", has);
+        if (!has) return;
+        var fitW = Math.min(720, Math.max(300, wrap.clientWidth - 28));
+        var wrapW = Math.round(fitW * state.zoom);
+        var composed = compose(state.current, Math.round(wrapW * (window.devicePixelRatio > 1 ? 1.5 : 1)));
+        if (!composed) return;
+        stage.width = composed.width; stage.height = composed.height;
+        stage.style.width = wrapW + "px";
+        stage.style.height = Math.round(wrapW * composed.height / composed.width) + "px";
+        sctx.drawImage(composed, 0, 0);
+
+        // selection outline
+        if (state.sel){
+          var item = findItem(state.sel);
+          // A page-pinned mask (product table halves) must not show its
+          // selection outline on pages it does not apply to.
+          if (item && state.sel.kind === "rect" && !rectAppliesTo(item, state.current)) item = null;
+          if (item && state.sel.kind === "note" && !noteAppliesTo(item, state.current)) item = null;
+          if (item){
+            var bf = currentBoxFrac();
+            var bx = bf.gx * stage.width, by = bf.gy * stage.height, bw = bf.gw * stage.width, bh = bf.gh * stage.height;
+            sctx.save();
+            sctx.strokeStyle = "#e11d48"; sctx.lineWidth = 3; sctx.setLineDash([8, 5]);
+            if (state.sel.kind === "rect"){
+              sctx.strokeRect(bx + item.x * bw, by + item.y * bh, item.w * bw, item.h * bh);
+              // resize handle at the bottom-right corner
+              sctx.setLineDash([]);
+              var hx = bx + (item.x + item.w) * bw, hy = by + (item.y + item.h) * bh;
+              sctx.fillStyle = "#ffffff"; sctx.lineWidth = 2;
+              sctx.fillRect(hx - 6, hy - 6, 12, 12);
+              sctx.strokeRect(hx - 6, hy - 6, 12, 12);
+            } else {
+              var fs = Math.max(13, bw * 0.034);
+              sctx.font = "700 " + fs + "px 'Be Vietnam Pro', Arial, sans-serif";
+              var tw = sctx.measureText(item.text).width;
+              sctx.strokeRect(bx + item.x * bw - 6, by + item.y * bh - fs - 5, tw + 12, fs + 12);
+            }
+            sctx.restore();
+            positionChip(item);
+          } else { state.sel = null; $("selChip").style.display = "none"; }
+        } else {
+          $("selChip").style.display = "none";
+        }
+
+        $("pageLabel").textContent = "Trang " + (state.current + 1) + " / " + state.pages.length +
+          (state.pages[state.current] ? " — " + state.pages[state.current].name : "");
+        $("prevPageBtn").disabled = state.current <= 0;
+        $("nextPageBtn").disabled = state.current >= state.pages.length - 1;
+        $("copyNextBtn").disabled = state.current >= state.pages.length - 1;
+        $("pagesTitle").textContent = state.pages.length + " TRANG";
+        $("zoomLabel").textContent = Math.round(state.zoom * 100) + "%";
+        var sh = $("stripHint");
+        if (sh){
+          sh.textContent = state.strips.length
+            ? "Bấm vào dải chữ đỏ bên sườn để sửa nội dung, màu, cỡ chữ."
+            : "Bấm “+ Thêm dải” ở cột phải để thêm chữ dọc bên sườn.";
+        }
+        $("tUndoBtn").disabled = !history.length;
+        $("tRedoBtn").disabled = !redoStack.length;
+        stage.classList.toggle("select-mode", state.tool === "select");
+        stage.classList.toggle("note-mode", state.tool === "note");
+        updateSelInfo();
+        renderThumbs();
+        scheduleMiniPreview();
+      }
+
+      function findItem(sel){
+        var arr = sel.kind === "rect" ? state.rects : state.notes;
+        for (var i = 0; i < arr.length; i++) if (arr[i].id === sel.id) return arr[i];
+        return null;
+      }
+
+      function positionChip(item){
+        var chip = $("selChip");
+        var rect = stage.getBoundingClientRect();
+        var wrapRect = wrap.getBoundingClientRect();
+        var bf = currentBoxFrac();
+        var x = rect.left - wrapRect.left + (bf.gx + (item.x || 0) * bf.gw) * rect.width;
+        var y = rect.top - wrapRect.top + (bf.gy + (item.y || 0) * bf.gh) * rect.height - 42;
+        chip.style.display = "block";
+        chip.style.left = Math.max(6, Math.min(x, wrapRect.width - 140)) + "px";
+        chip.style.top = Math.max(6, y) + "px";
+      }
+
+      function renderThumbs(){
+        var box = $("thumbs"); box.innerHTML = "";
+        state.pages.forEach(function(p, i){
+          var el = document.createElement("div");
+          el.className = "thumb-v" + (i === state.current ? " active" : "");
+          el.setAttribute("role", "button");
+          el.setAttribute("aria-label", "Xem trang " + (i + 1));
+          // Render thumbnails at high resolution (440px wide) and let CSS
+          // scale them to the chosen display size (100/160/220px), so the
+          // barcode, COD text and recipient name stay sharp at every size.
+          // The canvas is cached per page (invalidated when the page is
+          // rotated, which replaces p.src) so re-renders stay cheap even
+          // with 100+ pages.
+          var tc;
+          if (p._thumbCanvas && p._thumbSrc === p.src){
+            tc = p._thumbCanvas;
+          } else {
+            tc = document.createElement("canvas");
+            var tw = 440, th = Math.round(tw * p.src.height / p.src.width);
+            tc.width = tw; tc.height = th;
+            tc.getContext("2d").drawImage(p.src, 0, 0, tw, th);
+            p._thumbCanvas = tc; p._thumbSrc = p.src;
+          }
+          var acts = document.createElement("div");
+          acts.className = "thumb-actions";
+          var rot = document.createElement("button");
+          rot.type = "button"; rot.textContent = "↻"; rot.title = "Xoay trang này 90°";
+          rot.setAttribute("aria-label", "Xoay trang " + (i + 1));
+          rot.addEventListener("click", function(e){ e.stopPropagation(); rotatePage(i); });
+          var del = document.createElement("button");
+          del.type = "button"; del.className = "del"; del.textContent = "×"; del.title = "Xoá trang này";
+          del.setAttribute("aria-label", "Xoá trang " + (i + 1));
+          del.addEventListener("click", function(e){ e.stopPropagation(); deletePage(i); });
+          acts.appendChild(rot); acts.appendChild(del);
+          var lab = document.createElement("span");
+          lab.className = "tlabel"; lab.textContent = String(i + 1);
+          el.appendChild(tc); el.appendChild(acts); el.appendChild(lab);
+          el.addEventListener("click", function(){ state.current = i; state.sel = null; render(); });
+          box.appendChild(el);
+        });
+        // Keep the selected page visible inside the scrolling list
+        // without scrolling the whole page (matters with 100+ pages).
+        var act = box.querySelector(".thumb-v.active");
+        if (act){
+          var br = box.getBoundingClientRect(), ar = act.getBoundingClientRect();
+          if (window.innerWidth <= 900){
+            if (ar.left < br.left) box.scrollLeft -= (br.left - ar.left) + 6;
+            else if (ar.right > br.right) box.scrollLeft += (ar.right - br.right) + 6;
+          } else {
+            if (ar.top < br.top) box.scrollTop -= (br.top - ar.top) + 6;
+            else if (ar.bottom > br.bottom) box.scrollTop += (ar.bottom - br.bottom) + 6;
+          }
+        }
+      }
+
+      /* ---------------- thumbnail display size ---------------- */
+      function setThumbSize(size){
+        if (size !== "small" && size !== "medium" && size !== "large") size = "medium";
+        state.thumbSize = size;
+        var grid = $("editorGrid");
+        if (grid){
+          grid.classList.remove("thumb-small", "thumb-medium", "thumb-large");
+          grid.classList.add("thumb-" + size);
+        }
+        document.querySelectorAll("#thumbSizeSeg button").forEach(function(b){
+          var on = b.dataset.tsize === size;
+          b.classList.toggle("active", on);
+          b.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+      }
+      document.querySelectorAll("#thumbSizeSeg button").forEach(function(b){
+        b.addEventListener("click", function(){ setThumbSize(b.dataset.tsize); });
+      });
+
+      function rotatePage(idx){
+        var p = state.pages[idx];
+        if (!p) return;
+        var c = document.createElement("canvas");
+        c.width = p.src.height; c.height = p.src.width;
+        var x = c.getContext("2d");
+        x.translate(c.width / 2, c.height / 2);
+        x.rotate(Math.PI / 2);
+        x.drawImage(p.src, -p.src.width / 2, -p.src.height / 2);
+        p.src = c;
+        if (p.lines && p.lines.length){
+          p.lines = p.lines.map(function(l){
+            return { text: l.text, x0: 1 - l.y1, y0: l.x0, x1: 1 - l.y0, y1: l.x1 };
+          });
+        }
+        // Page-pinned masks/notes rotate along with their page.
+        state.rects.forEach(function(r){
+          if (r.only === idx || (!state.applyAll && r.only == null && !r.scope && r.page === idx)){
+            var nx = 1 - (r.y + r.h), ny = r.x, nw = r.h, nh = r.w;
+            r.x = nx; r.y = ny; r.w = nw; r.h = nh;
+          }
+        });
+        state.notes.forEach(function(n){
+          if (n.only === idx || (!state.applyAll && n.only == null && n.page === idx)){
+            var nx2 = 1 - n.y, ny2 = n.x;
+            n.x = nx2; n.y = ny2;
+          }
+        });
+        render();
+        toast("Đã xoay trang " + (idx + 1) + " 90°.");
+      }
+
+      function deletePage(idx){
+        if (!state.pages.length) return;
+        state.pages.splice(idx, 1);
+        state.rects = state.rects.filter(function(r){
+          if (r.only === idx) return false;
+          if (!state.applyAll && r.only == null && !r.scope && r.page === idx) return false;
+          return true;
+        });
+        state.rects.forEach(function(r){
+          if (r.only != null && r.only > idx) r.only--;
+          else if (r.page > idx) r.page--;
+        });
+        state.notes = state.notes.filter(function(n){
+          if (n.only === idx) return false;
+          if (!state.applyAll && n.only == null && n.page === idx) return false;
+          return true;
+        });
+        state.notes.forEach(function(n){
+          if (n.only != null && n.only > idx) n.only--;
+          else if (n.page > idx) n.page--;
+        });
+        if (state.current > state.pages.length - 1) state.current = Math.max(0, state.pages.length - 1);
+        state.sel = null;
+        analyzePages();
+        render();
+        toast("Đã xoá trang " + (idx + 1) + " — trang này sẽ không còn trong bản in và ảnh tải về.");
+      }
+
+      function updateSelInfo(){
+        var title = $("selTitle"), desc = $("selDesc"), ctrls = $("selControls");
+        var item = state.sel ? findItem(state.sel) : null;
+        if (!item){
+          title.textContent = "Chưa chọn ô nào";
+          desc.innerHTML = "Vẽ một ô che lên tên sản phẩm ở trang này. Mặc định ô sẽ được áp cho <strong>tất cả các trang</strong> — bạn có thể đổi lại thành chỉ một trang sau khi chọn nó.";
+          ctrls.style.display = "none";
+          return;
+        }
+        var isRect = state.sel.kind === "rect";
+        title.textContent = isRect ? "Ô che đã chọn" : "Ghi chú đã chọn";
+        var styleNames = { black: "Che đen", white: "Che trắng", blur: "Làm mờ", pixel: "Mosaic" };
+        desc.textContent = isRect
+          ? (styleNames[item.style] || "Che") + " — kéo để di chuyển, kéo góc dưới-phải (ô vuông đỏ) để đổi kích thước, Ctrl+D nhân đôi, Delete xóa."
+          : "“" + item.text + "” — kéo để di chuyển vị trí, Delete để xóa.";
+        ctrls.style.display = "block";
+        var scope = item.only != null ? "this" : ((item.all === true || (item.all == null && state.applyAll)) ? "all" : "this");
+        document.querySelectorAll("input[name='selScope']").forEach(function(r){ r.checked = r.value === scope; });
+      }
+
+      function duplicateSel(){
+        if (!state.sel){ toast("Hãy chọn một ô trước rồi bấm Ctrl+D để nhân đôi."); return; }
+        var item = findItem(state.sel);
+        if (!item) return;
+        pushHistory();
+        var off = 0.02;
+        if (state.sel.kind === "rect"){
+          var r = { id: uid++, x: Math.min(1 - item.w, item.x + off), y: Math.min(1 - item.h, item.y + off), w: item.w, h: item.h, style: item.style, page: item.page };
+          if (item.only != null) r.only = item.only;
+          if (item.scope) r.scope = item.scope;
+          if (item.all != null) r.all = item.all;
+          if (item.autoProd) r.autoProd = item.autoProd;
+          state.rects.push(r);
+          state.sel = { kind: "rect", id: r.id };
+        } else {
+          var n = { id: uid++, x: Math.min(0.95, item.x + off), y: Math.min(1, item.y + off), text: item.text, page: item.page };
+          if (item.only != null) n.only = item.only;
+          if (item.all != null) n.all = item.all;
+          state.notes.push(n);
+          state.sel = { kind: "note", id: n.id };
+        }
+        render();
+        toast("Đã nhân đôi mục đã chọn.");
+      }
+
+      /* ---------------- pointer interaction ---------------- */
+      var drag = null; // {mode:'draw'|'move'|'note-move', ...}
+      function toNorm(e){
+        var r = stage.getBoundingClientRect();
+        var bf = currentBoxFrac();
+        var lx = r.left + bf.gx * r.width, lw = bf.gw * r.width;
+        var ly = r.top + bf.gy * r.height, lh = bf.gh * r.height;
+        return {
+          x: (e.clientX - lx) / lw,
+          y: (e.clientY - ly) / lh,
+          inStrip: (e.clientY - r.top) > (bf.gy + bf.gh) * r.height
+        };
+      }
+      function hitRect(p){
+        var rs = visibleRects();
+        for (var i = rs.length - 1; i >= 0; i--){
+          var r = rs[i];
+          if (p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) return r;
+        }
+        return null;
+      }
+      function hitNote(p){
+        var ns = visibleNotes();
+        var approxW = 0.3, approxH = 0.045;
+        for (var i = ns.length - 1; i >= 0; i--){
+          var n = ns[i];
+          if (p.x >= n.x - 0.01 && p.x <= n.x + approxW && p.y >= n.y - approxH && p.y <= n.y + 0.012) return n;
+        }
+        return null;
+      }
+
+      stage.addEventListener("pointerdown", function(e){
+        if (!state.pages.length) return;
+        // Clicking a side/top/bottom strip selects that strip for editing
+        // instead of drawing a mask — this is how the user customises the
+        // red vertical text without hunting through the right column.
+        var hitStrip = stripBandAtClient(e.clientX, e.clientY);
+        if (hitStrip){
+          var eb0 = $("stripEditBtn"); if (eb0) eb0.style.display = "none";
+          focusStripCard(hitStrip.s.id);
+          return;
+        }
+        var p = toNorm(e);
+        if (p.inStrip && state.bigCode.place === "shrink") return;
+        stage.setPointerCapture(e.pointerId);
+        hideNoteInput(false);
+
+        if (state.tool === "note"){
+          var hn = hitNote(p);
+          if (hn){
+            pushHistory();
+            drag = { mode: "note-move", item: hn, dx: p.x - hn.x, dy: p.y - hn.y, moved: false };
+            state.sel = { kind: "note", id: hn.id };
+            render();
+            return;
+          }
+          openNoteInput(e, p);
+          return;
+        }
+
+        // Dragging the bottom-right handle of the selected rect resizes it.
+        if (state.sel && state.sel.kind === "rect"){
+          var si = findItem(state.sel);
+          if (si && rectAppliesTo(si, state.current)){
+            var bf = currentBoxFrac();
+            var srect = stage.getBoundingClientRect();
+            var tolX = 18 / Math.max(1, bf.gw * srect.width);
+            var tolY = 18 / Math.max(1, bf.gh * srect.height);
+            if (Math.abs(p.x - (si.x + si.w)) <= tolX && Math.abs(p.y - (si.y + si.h)) <= tolY){
+              pushHistory();
+              drag = { mode: "resize", item: si, moved: false };
+              render();
+              return;
+            }
+          }
+        }
+
+        var hr = hitRect(p);
+        if (hr){
+          pushHistory();
+          drag = { mode: "move", item: hr, dx: p.x - hr.x, dy: p.y - hr.y, moved: false };
+          state.sel = { kind: "rect", id: hr.id };
+          render();
+          return;
+        }
+        var hn2 = hitNote(p);
+        if (hn2){
+          if (state.tool === "select"){
+            pushHistory();
+            drag = { mode: "note-move", item: hn2, dx: p.x - hn2.x, dy: p.y - hn2.y, moved: false };
+          }
+          state.sel = { kind: "note", id: hn2.id };
+          render();
+          return;
+        }
+        if (state.tool === "select"){ state.sel = null; render(); return; }
+        state.sel = null;
+        drag = { mode: "draw", sx: p.x, sy: p.y, cx: p.x, cy: p.y };
+        render();
+      });
+
+      // Hovering a strip shows the floating "✎ Sửa dải này" button on it.
+      stage.addEventListener("pointermove", function(e){
+        if (!drag){
+          var hb = stripBandAtClient(e.clientX, e.clientY);
+          var btn = $("stripEditBtn");
+          if (hb && btn){
+            hoverStripId = hb.s.id;
+            var srect = stage.getBoundingClientRect();
+            var wrect = wrap.getBoundingClientRect();
+            var page0 = state.pages[state.current];
+            var L0 = layoutFor(page0.src.width, page0.src.height, 1000);
+            var bx = srect.left - wrect.left + (hb.band.x / 1000) * srect.width;
+            var by = srect.top - wrect.top + (hb.band.y / L0.outH) * srect.height;
+            var bw = (hb.band.w / 1000) * srect.width;
+            var bh = (hb.band.h / L0.outH) * srect.height;
+            btn.style.display = "block";
+            // Centre the button on the band, clamped inside the wrap.
+            var bwBtn = 132;
+            var left = bx + bw / 2 - bwBtn / 2;
+            left = Math.max(6, Math.min(left, wrect.width - bwBtn - 6));
+            var top = hb.band.vert ? by + 14 : by + bh / 2 - 17;
+            top = Math.max(6, Math.min(top, wrect.height - 44));
+            btn.style.left = left + "px";
+            btn.style.top = top + "px";
+            stage.style.cursor = "pointer";
+          } else {
+            hoverStripId = null;
+            if (btn) btn.style.display = "none";
+            stage.style.cursor = "";
+          }
+        }
+        if (!drag) return;
+        var p = toNorm(e);
+        if (drag.mode === "move"){
+          var it = drag.item;
+          var nx = Math.min(1 - it.w, Math.max(0, p.x - drag.dx));
+          var ny = Math.min(1 - it.h, Math.max(0, p.y - drag.dy));
+          if (Math.abs(nx - it.x) > 0.001 || Math.abs(ny - it.y) > 0.001) drag.moved = true;
+          it.x = nx; it.y = ny;
+          render();
+        } else if (drag.mode === "note-move"){
+          var n = drag.item;
+          n.x = Math.min(0.95, Math.max(0, p.x - drag.dx));
+          n.y = Math.min(1, Math.max(0.02, p.y - drag.dy));
+          drag.moved = true;
+          render();
+        } else if (drag.mode === "resize"){
+          var ri = drag.item;
+          ri.w = Math.min(1 - ri.x, Math.max(0.02, p.x - ri.x));
+          ri.h = Math.min(1 - ri.y, Math.max(0.015, p.y - ri.y));
+          drag.moved = true;
+          render();
+        } else if (drag.mode === "draw"){
+          drag.cx = p.x; drag.cy = p.y;
+          render();
+          var bf = currentBoxFrac();
+          var bw2 = bf.gw * stage.width, bh2 = bf.gh * stage.height;
+          var x = bf.gx * stage.width + Math.min(drag.sx, drag.cx) * bw2;
+          var y = bf.gy * stage.height + Math.min(drag.sy, drag.cy) * bh2;
+          var w = Math.abs(drag.cx - drag.sx) * bw2;
+          var h = Math.abs(drag.cy - drag.sy) * bh2;
+          sctx.save();
+          sctx.strokeStyle = "#0d9488"; sctx.lineWidth = 2; sctx.setLineDash([6, 4]);
+          sctx.strokeRect(x, y, w, h);
+          sctx.restore();
+        }
+      });
+      stage.addEventListener("pointerup", function(e){
+        if (!drag) return;
+        var d = drag; drag = null;
+        if (d.mode === "draw"){
+          var x = Math.min(d.sx, d.cx), y = Math.min(d.sy, d.cy);
+          var w = Math.abs(d.cx - d.sx), h = Math.abs(d.cy - d.sy);
+          if (w > 0.012 && h > 0.01){
+            pushHistory();
+            var r = { id: uid++, x: x, y: y, w: w, h: h, style: state.maskStyle, page: state.current };
+            state.rects.push(r);
+            state.sel = { kind: "rect", id: r.id };
+          }
+          render();
+        } else if ((d.mode === "move" || d.mode === "note-move" || d.mode === "resize") && !d.moved){
+          // click without drag: keep selection (delete via chip / Delete key / double click)
+          render();
+        }
+      });
+
+      stage.addEventListener("dblclick", function(e){
+        var p = toNorm(e);
+        var hr = hitRect(p);
+        if (hr){ pushHistory(); state.rects = state.rects.filter(function(r){ return r.id !== hr.id; }); state.sel = null; render(); toast("Đã xóa ô che."); return; }
+        var hn = hitNote(p);
+        if (hn){ pushHistory(); state.notes = state.notes.filter(function(n){ return n.id !== hn.id; }); state.sel = null; render(); toast("Đã xóa ghi chú."); }
+      });
+
+      stage.addEventListener("pointerleave", function(){
+        hoverStripId = null;
+        var b = $("stripEditBtn"); if (b) b.style.display = "none";
+      });
+      $("stripEditBtn").addEventListener("pointerdown", function(e){ e.stopPropagation(); });
+      $("stripEditBtn").addEventListener("click", function(e){
+        e.stopPropagation();
+        if (hoverStripId != null){
+          this.style.display = "none";
+          focusStripCard(hoverStripId);
+        }
+      });
+
+      $("selChip").addEventListener("click", function(){
+        if (!state.sel) return;
+        pushHistory();
+        if (state.sel.kind === "rect") state.rects = state.rects.filter(function(r){ return r.id !== state.sel.id; });
+        else state.notes = state.notes.filter(function(n){ return n.id !== state.sel.id; });
+        state.sel = null; render(); toast("Đã xóa mục đã chọn.");
+      });
+
+      document.addEventListener("keydown", function(e){
+        var tag = document.activeElement && document.activeElement.tagName;
+        var typing = /INPUT|TEXTAREA|SELECT/.test(tag || "");
+        if ((e.ctrlKey || e.metaKey) && (e.key === "z" || e.key === "Z")){
+          if (typing) return;
+          e.preventDefault();
+          if (e.shiftKey) redo(); else undo();
+          return;
+        }
+        if ((e.ctrlKey || e.metaKey) && (e.key === "y" || e.key === "Y")){
+          if (!typing){ e.preventDefault(); redo(); }
+          return;
+        }
+        if ((e.ctrlKey || e.metaKey) && (e.key === "d" || e.key === "D")){
+          if (typing) return;
+          e.preventDefault(); duplicateSel();
+          return;
+        }
+        if (typing || !state.pages.length) return;
+        if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key >= "1" && e.key <= "4"){
+          setTool(["select", "black", "white", "note"][parseInt(e.key, 10) - 1]);
+          return;
+        }
+        if ((e.key === "Delete" || e.key === "Backspace") && state.sel){
+          e.preventDefault(); $("selChip").click();
+          return;
+        }
+        if (state.sel && e.key.indexOf("Arrow") === 0){
+          var item = findItem(state.sel);
+          if (!item) return;
+          e.preventDefault();
+          pushHistory();
+          var step = e.shiftKey ? 0.01 : 0.0025;
+          if (e.key === "ArrowLeft") item.x -= step;
+          if (e.key === "ArrowRight") item.x += step;
+          if (e.key === "ArrowUp") item.y -= step;
+          if (e.key === "ArrowDown") item.y += step;
+          var maxX = state.sel.kind === "rect" ? 1 - item.w : 0.98;
+          var maxY = state.sel.kind === "rect" ? 1 - item.h : 1;
+          item.x = Math.min(maxX, Math.max(0, item.x));
+          item.y = Math.min(maxY, Math.max(0.02, item.y));
+          render();
+        }
+      });
+
+      /* ---------------- note input ---------------- */
+      var pendingNotePos = null;
+      function openNoteInput(e, p){
+        var inp = $("noteInput");
+        var rect = stage.getBoundingClientRect();
+        var wrapRect = wrap.getBoundingClientRect();
+        var bf = currentBoxFrac();
+        inp.style.display = "block";
+        inp.style.left = Math.min(wrapRect.width - 190, Math.max(6, rect.left - wrapRect.left + (bf.gx + p.x * bf.gw) * rect.width)) + "px";
+        inp.style.top = Math.min(wrapRect.height - 50, Math.max(6, rect.top - wrapRect.top + (bf.gy + p.y * bf.gh) * rect.height - 20)) + "px";
+        inp.value = "";
+        pendingNotePos = p;
+        setTimeout(function(){ inp.focus(); }, 30);
+      }
+      function hideNoteInput(commit){
+        var inp = $("noteInput");
+        if (inp.style.display === "none") return;
+        if (commit && pendingNotePos && inp.value.trim()){
+          pushHistory();
+          var n = { id: uid++, x: pendingNotePos.x, y: Math.max(0.03, pendingNotePos.y), text: inp.value.trim(), page: state.current };
+          state.notes.push(n);
+          state.sel = { kind: "note", id: n.id };
+        }
+        inp.style.display = "none";
+        pendingNotePos = null;
+        render();
+      }
+      $("noteInput").addEventListener("keydown", function(e){
+        if (e.key === "Enter"){ e.preventDefault(); hideNoteInput(true); }
+        if (e.key === "Escape"){ hideNoteInput(false); }
+        e.stopPropagation();
+      });
+      $("noteInput").addEventListener("blur", function(){ hideNoteInput(true); });
+
+      /* ---------------- auto-detect product table ---------------- */
+      // The product table never sits at one fixed position: a long
+      // product name wraps to 4–5 lines, a short one takes 1 line, and
+      // the table can spill from the bottom of page 1 to the top of
+      // page 2. So instead of a fixed mask, read the page's text, find
+      // the "Product Name" header line and mask every product row below
+      // it down to the "Qty Total" line or the footer — the mask height
+      // follows the real number of lines on each page.
+      // Text sources, best first: the PDF text layer captured at load
+      // time (exact), text baked into the built-in samples, then OCR
+      // (Tesseract.js, loaded lazily on first use) for photos/scans.
+      function setDetectStatus(msg){ var el = $("detectStatus"); if (el) el.textContent = msg || ""; }
+
+      function buildPdfLines(tc, vp){
+        var raw = [];
+        (tc.items || []).forEach(function(it){
+          if (!it.str || !it.str.trim()) return;
+          var tx = pdfjsLib.Util.transform(vp.transform, it.transform);
+          var fh = Math.sqrt(tx[2] * tx[2] + tx[3] * tx[3]) || (it.height || 10) * vp.scale;
+          raw.push({ str: it.str, x: tx[4], base: tx[5], h: fh, w: Math.max(1, (it.width || 0) * vp.scale) });
+        });
+        raw.sort(function(a, b){ return a.base - b.base || a.x - b.x; });
+        var grouped = [];
+        raw.forEach(function(it){
+          var L = grouped[grouped.length - 1];
+          if (L && Math.abs(it.base - L.base) <= Math.max(3, it.h * 0.55)) L.items.push(it);
+          else grouped.push({ base: it.base, items: [it] });
+        });
+        return grouped.map(function(L){
+          var items = L.items.slice().sort(function(a, b){ return a.x - b.x; });
+          var x0 = Infinity, x1 = -Infinity, h = 0;
+          items.forEach(function(it){ x0 = Math.min(x0, it.x); x1 = Math.max(x1, it.x + it.w); h = Math.max(h, it.h); });
+          return {
+            text: items.map(function(it){ return it.str; }).join(" "),
+            x0: x0 / vp.width, x1: x1 / vp.width,
+            y0: (L.base - h) / vp.height, y1: (L.base + h * 0.35) / vp.height
+          };
+        });
+      }
+
+      var tessLoading = null, tessWorker = null, ocrCtx = { page: 0, total: 0 };
+      function loadTesseract(){
+        if (window.Tesseract) return Promise.resolve();
+        if (tessLoading) return tessLoading;
+        tessLoading = new Promise(function(resolve, reject){
+          var s = document.createElement("script");
+          s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+          s.onload = function(){ resolve(); };
+          s.onerror = function(){ reject(new Error("tesseract load failed")); };
+          document.head.appendChild(s);
+        });
+        return tessLoading;
+      }
+      function getOcrWorker(){
+        if (tessWorker) return tessWorker;
+        tessWorker = loadTesseract().then(function(){
+          return Tesseract.createWorker("eng", 1, {
+            logger: function(m){
+              if (m.status === "recognizing text"){
+                setDetectStatus("Đang đọc chữ trên ảnh — trang " + ocrCtx.page + "/" + ocrCtx.total + "… " + Math.round((m.progress || 0) * 100) + "%");
+              }
+            }
+          });
+        });
+        return tessWorker;
+      }
+      function linesFromOcr(data, W, H){
+        var out = [];
+        function push(text, b){
+          if (!b) return;
+          out.push({ text: text || "", x0: b.x0 / W, y0: b.y0 / H, x1: b.x1 / W, y1: b.y1 / H });
+        }
+        if (data.blocks && data.blocks.length){
+          data.blocks.forEach(function(bl){
+            (bl.paragraphs || []).forEach(function(pa){
+              (pa.lines || []).forEach(function(li){ push(li.text, li.bbox); });
+            });
+          });
+        } else if (data.lines && data.lines.length){
+          data.lines.forEach(function(li){ push(li.text, li.bbox); });
+        }
+        return out;
+      }
+      function ocrPage(page, idx, total){
+        ocrCtx = { page: idx + 1, total: total };
+        setDetectStatus("Đang đọc chữ trên ảnh — trang " + (idx + 1) + "/" + total + "…");
+        return getOcrWorker().then(function(worker){
+          var oc = page.src;
+          if (oc.width > 2200){
+            var scaled = document.createElement("canvas");
+            scaled.width = 2200; scaled.height = Math.round(oc.height * 2200 / oc.width);
+            scaled.getContext("2d").drawImage(oc, 0, 0, scaled.width, scaled.height);
+            oc = scaled;
+          }
+          return worker.recognize(oc, {}, { blocks: true }).then(function(res){
+            var lines = linesFromOcr(res.data, oc.width, oc.height);
+            page.lines = lines; page.ocrTried = true;
+            return lines.length ? lines : null;
+          });
+        }).catch(function(){ page.ocrTried = true; return null; });
+      }
+      function getPageLines(page, idx, total){
+        if (page.lines && page.lines.length) return Promise.resolve(page.lines);
+        if (page.ocrTried) return Promise.resolve(null);
+        return ocrPage(page, idx, total);
+      }
+
+      // Region of the product table on one page, from its text lines.
+      // Returns {y0, y1} in page fractions, or null when not found.
+      function findProductRegion(lines, pageIdx){
+        var sorted = lines.filter(function(l){ return l && l.text; }).slice()
+          .sort(function(a, b){ return a.y0 - b.y0; });
+        if (!sorted.length) return null;
+        var headerIdx = -1;
+        for (var i = 0; i < sorted.length; i++){
+          if (/product\s*name/i.test(sorted[i].text)){ headerIdx = i; break; }
+        }
+        var top, from;
+        if (headerIdx >= 0){
+          top = sorted[headerIdx].y1 - 0.002; from = headerIdx + 1;
+        } else {
+          // Continuation page: the table spills in from the previous
+          // page with no header of its own — mask from the top of the
+          // page (below an "In transit by" line if present) down to the
+          // Qty Total / footer line.
+          if (pageIdx === 0) return null;
+          top = 0.006; from = 0;
+          if (/in\s*transit/i.test(sorted[0].text)) top = sorted[0].y1 + 0.002;
+        }
+        var bottom = 0.992;
+        for (var j = from; j < sorted.length; j++){
+          var t = sorted[j].text;
+          if (/qty\s*total/i.test(t)){ bottom = Math.min(0.995, sorted[j].y1 + 0.005); break; }
+          if (/tiktok|shopee|lazada|order\s*id/i.test(t)){ bottom = sorted[j].y0 - 0.005; break; }
+        }
+        if (bottom - top < 0.015) return null;
+        return { y0: Math.max(0, top), y1: Math.min(1, bottom) };
+      }
+
+      var detecting = false;
+      function autoDetectProducts(btn){
+        if (detecting) return;
+        detecting = true;
+        var oldLabel = btn.textContent;
+        btn.disabled = true; btn.textContent = "Đang nhận diện…";
+        pushHistory();
+        // Re-running replaces the previous auto masks, never stacks them.
+        state.rects = state.rects.filter(function(r){ return !r.autoProd; });
+        var total = state.pages.length, ok = 0, fails = [];
+        var chain = Promise.resolve();
+        state.pages.forEach(function(page, idx){
+          chain = chain.then(function(){
+            if (!(page.lines && page.lines.length) && !page.ocrTried){
+              setDetectStatus("Đang tìm bảng sản phẩm — trang " + (idx + 1) + "/" + total + "…");
+            }
+            return getPageLines(page, idx, total).then(function(lines){
+              var region = lines ? findProductRegion(lines, idx) : null;
+              if (region){
+                state.rects.push({
+                  id: uid++, x: 0.012, y: region.y0, w: 0.976, h: region.y1 - region.y0,
+                  style: state.maskStyle, page: idx, only: idx, autoProd: true
+                });
+                ok++;
+              } else fails.push(idx + 1);
+              render();
+            });
+          });
+        });
+        chain.then(function(){
+          detecting = false; btn.disabled = false; btn.textContent = oldLabel;
+          setDetectStatus("");
+          var cur = null;
+          state.rects.forEach(function(r){ if (r.autoProd && r.only === state.current) cur = r; });
+          state.sel = cur ? { kind: "rect", id: cur.id } : null;
+          render();
+          if (ok === total){
+            toast("Đã tự nhận diện và che bảng sản phẩm trên cả " + total + " trang — mỗi ô che vừa đúng số dòng sản phẩm thật của trang đó. Kiểm tra lại và kéo chỉnh nếu cần.");
+          } else if (ok > 0){
+            toast("Đã che tự động " + ok + "/" + total + " trang. Trang " + fails.join(", ") + " không đọc được chữ (ảnh mờ hoặc không có lớp chữ) — hãy tự vẽ ô che cho các trang đó.");
+          } else {
+            toast("Không đọc được chữ trên nhãn nên chưa che tự động được. Hãy tự kéo vẽ ô che như trước, hoặc dùng file PDF gốc tải từ sàn (có sẵn lớp chữ) để nhận diện chính xác nhất.");
+          }
+        });
+      }
+
+      /* ---------------- carrier & code detection ---------------- */
+      var CARRIERS = [
+        { re: /j\s*&\s*t/i, name: "J&T Express" },
+        { re: /shopee\s*express|\bspx\b/i, name: "Shopee Express" },
+        { re: /giao\s*hàng\s*nhanh|giao\s*hang\s*nhanh|\bghn\b/i, name: "Giao Hàng Nhanh" },
+        { re: /giao\s*hàng\s*tiết\s*kiệm|giao\s*hang\s*tiet\s*kiem|\bghtk\b/i, name: "Giao Hàng Tiết Kiệm" },
+        { re: /viettel\s*post/i, name: "Viettel Post" },
+        { re: /ninja\s*van/i, name: "Ninja Van" },
+        { re: /best\s*express/i, name: "BEST Express" },
+        { re: /lazada/i, name: "Lazada Logistics" },
+        { re: /vnpost|vietnam\s*post/i, name: "VNPost" }
+      ];
+      function detectCodes(page){
+        if (!page.lines || !page.lines.length) return;
+        var texts = page.lines.map(function(l){ return l.text || ""; });
+        var joined = texts.join("\n");
+        if (!page.orderCode){
+          var m = joined.match(/order\s*id[:\s#]*([0-9A-Za-z]{6,})/i);
+          if (m) page.orderCode = m[1];
+        }
+        if (!page.trackingCode){
+          var cand = "";
+          texts.forEach(function(t){
+            var s = t.trim();
+            if (/^[0-9]{10,}$/.test(s) && s.length > cand.length) cand = s;
+            else if (/^[A-Z]{2,4}[0-9]{8,}$/i.test(s) && !cand) cand = s.toUpperCase();
+          });
+          if (!cand){
+            var m2 = joined.match(/[0-9]{12,}/);
+            if (m2) cand = m2[0];
+          }
+          if (cand) page.trackingCode = cand;
+        }
+      }
+      function analyzePages(){
+        var name = "";
+        state.pages.forEach(function(p){
+          detectCodes(p);
+          if (!name && p.lines && p.lines.length){
+            var joined = p.lines.map(function(l){ return l.text || ""; }).join("\n");
+            for (var i = 0; i < CARRIERS.length; i++){
+              if (CARRIERS[i].re.test(joined)){ name = CARRIERS[i].name; break; }
+            }
+          }
+        });
+        var el = $("carrierName");
+        if (el) el.textContent = name || "Chưa nhận diện được";
+      }
+
+      /* ---------------- strips UI ---------------- */
+      function stripField(label, control){
+        var f = document.createElement("div"); f.className = "field";
+        var l = document.createElement("label"); l.textContent = label;
+        f.appendChild(l); f.appendChild(control);
+        return f;
+      }
+      function stripSelect(opts, val, onChange){
+        var sel = document.createElement("select");
+        opts.forEach(function(o){
+          var op = document.createElement("option");
+          op.value = o[0]; op.textContent = o[1];
+          sel.appendChild(op);
+        });
+        sel.value = val;
+        sel.addEventListener("change", function(){ onChange(sel.value); });
+        return sel;
+      }
+      function renderStrips(){
+        var box = $("stripsList");
+        if (!box) return;
+        box.innerHTML = "";
+        state.strips.forEach(function(s, i){
+          if (s.textSize == null) s.textSize = "medium";
+          var card = document.createElement("div"); card.className = "strip-card" + (state.selectedStripId === s.id ? " highlight" : "");
+          card.setAttribute("data-strip-id", String(s.id));
+          var head = document.createElement("div"); head.className = "strip-head";
+          var t = document.createElement("strong"); t.textContent = "Dải " + (i + 1) + " — " + stripPosLabel(s.pos);
+          var del = document.createElement("button");
+          del.type = "button"; del.className = "strip-del"; del.textContent = "×";
+          del.title = "Xóa dải này"; del.setAttribute("aria-label", "Xóa dải " + (i + 1));
+          del.addEventListener("click", function(){
+            var wasSel = state.selectedStripId === s.id;
+            state.strips.splice(i, 1);
+            if (wasSel) state.selectedStripId = null;
+            var eb = $("stripEditBtn"); if (eb) eb.style.display = "none";
+            hoverStripId = null;
+            renderStrips(); render();
+            toast("Đã xóa Dải " + (i + 1) + " (" + stripPosLabel(s.pos) + ") — dải đã biến mất khỏi xem trước, ảnh tải về và bản in.");
+          });
+          head.appendChild(t); head.appendChild(del);
+          card.appendChild(head);
+
+          var grid = document.createElement("div"); grid.className = "strip-grid";
+          grid.appendChild(stripField("Vị trí", stripSelect(
+            [["right", "Cạnh phải"], ["left", "Cạnh trái"], ["top", "Mép trên"], ["bottom", "Mép dưới"]],
+            s.pos,
+            function(v){
+              s.pos = v;
+              s.thick = (v === "top" || v === "bottom") ? 8 : 5;
+              renderStrips(); render();
+            }
+          )));
+          var thickInp = document.createElement("input");
+          thickInp.type = "number"; thickInp.min = "1"; thickInp.max = "30"; thickInp.step = "0.5";
+          thickInp.value = s.thick;
+          thickInp.addEventListener("input", function(){
+            var v = parseFloat(thickInp.value);
+            s.thick = isNaN(v) ? 0 : Math.min(30, Math.max(0, v));
+            render();
+          });
+          grid.appendChild(stripField("Dày (% tờ)", thickInp));
+          grid.appendChild(stripField("Nội dung", stripSelect(
+            [["text", "Chữ tự nhập"], ["code", "Mã quét được"]],
+            s.content,
+            function(v){ s.content = v; renderStrips(); render(); }
+          )));
+          grid.appendChild(stripField("Kiểu in", stripSelect(
+            [["bigtext", "Chữ cỡ lớn"], ["barcode", "Mã vạch"], ["qrcode", "Mã QR"]],
+            s.style,
+            function(v){ s.style = v; render(); }
+          )));
+          card.appendChild(grid);
+
+          if (s.content === "text"){
+            var txtInp = document.createElement("input");
+            txtInp.type = "text"; txtInp.value = s.text || "";
+            txtInp.setAttribute("autocomplete", "off");
+            txtInp.addEventListener("input", function(){ s.text = txtInp.value; render(); });
+            var tf = stripField("Chữ in ra", txtInp);
+            tf.style.marginTop = "8px";
+            card.appendChild(tf);
+          } else {
+            var lf = stripField("Lấy mã", stripSelect(
+              [["order", "Mã đơn hàng"], ["tracking", "Mã vận đơn"]],
+              s.codeSource,
+              function(v){ s.codeSource = v; render(); }
+            ));
+            lf.style.marginTop = "8px";
+            card.appendChild(lf);
+          }
+
+          if (s.style === "bigtext"){
+            var szf = stripField("Cỡ chữ", stripSelect(
+              [["small", "Nhỏ"], ["medium", "Vừa"], ["large", "Lớn"]],
+              s.textSize || "medium",
+              function(v){ s.textSize = v; state.selectedStripId = s.id; render(); }
+            ));
+            szf.style.marginTop = "8px";
+            card.appendChild(szf);
+            var szHint = document.createElement("p");
+            szHint.className = "hint"; szHint.style.margin = "4px 0 0";
+            szHint.textContent = "Cỡ chữ đổi ngay trên nhãn — dải hẹp thì chữ tự thu lại cho vừa độ dài dải.";
+            card.appendChild(szHint);
+          }
+
+          var crow = document.createElement("div"); crow.className = "color-row";
+          var cf1 = document.createElement("div"); cf1.className = "color-field";
+          var cl1 = document.createElement("label"); cl1.textContent = "Chữ";
+          var ci1 = document.createElement("input");
+          ci1.type = "color"; ci1.value = s.color || "#000000";
+          ci1.addEventListener("input", function(){ s.color = ci1.value; render(); });
+          cf1.appendChild(cl1); cf1.appendChild(ci1);
+          var cf2 = document.createElement("div"); cf2.className = "color-field";
+          var cl2 = document.createElement("label"); cl2.textContent = "Nền";
+          var ci2 = document.createElement("input");
+          ci2.type = "color"; ci2.value = s.bg || "#ffffff";
+          ci2.addEventListener("input", function(){ s.bg = ci2.value; render(); });
+          cf2.appendChild(cl2); cf2.appendChild(ci2);
+          crow.appendChild(cf1); crow.appendChild(cf2);
+          card.appendChild(crow);
+
+          box.appendChild(card);
+        });
+      }
+
+      /* ---------------- toolbar wiring ---------------- */
+      function setTool(t){
+        if (t === "black" || t === "white"){
+          state.tool = "draw";
+          state.maskStyle = t;
+        } else {
+          state.tool = t;
+        }
+        syncToolUI();
+        render();
+      }
+      function syncToolUI(){
+        document.querySelectorAll("[data-ttool]").forEach(function(b){
+          var t = b.dataset.ttool;
+          var on = (t === "select" && state.tool === "select") ||
+                   (t === "note" && state.tool === "note") ||
+                   (t === "black" && state.tool === "draw" && state.maskStyle === "black") ||
+                   (t === "white" && state.tool === "draw" && state.maskStyle === "white");
+          b.classList.toggle("active", on);
+        });
+        $("styleSeg").querySelectorAll("button").forEach(function(x){
+          x.classList.toggle("active", x.dataset.style === state.maskStyle);
+        });
+      }
+      document.querySelectorAll("[data-ttool]").forEach(function(b){
+        b.addEventListener("click", function(){ setTool(b.dataset.ttool); });
+      });
+      $("styleSeg").addEventListener("click", function(e){
+        var b = e.target.closest("button"); if (!b) return;
+        state.maskStyle = b.dataset.style;
+        if (state.tool === "select") state.tool = "draw";
+        syncToolUI();
+        render();
+      });
+      $("tUndoBtn").addEventListener("click", undo);
+      $("tRedoBtn").addEventListener("click", redo);
+      $("zoomInBtn").addEventListener("click", function(){
+        state.zoom = Math.min(3, Math.round((state.zoom + 0.25) * 100) / 100);
+        render();
+      });
+      $("zoomOutBtn").addEventListener("click", function(){
+        state.zoom = Math.max(0.5, Math.round((state.zoom - 0.25) * 100) / 100);
+        render();
+      });
+      document.querySelectorAll("input[name='selScope']").forEach(function(r){
+        r.addEventListener("change", function(){
+          if (!this.checked || !state.sel) return;
+          var item = findItem(state.sel);
+          if (!item) return;
+          pushHistory();
+          if (this.value === "all"){
+            item.only = null; item.all = true;
+            if (item.scope) delete item.scope;
+            toast("Mục này sẽ áp cho tất cả các trang.");
+          } else {
+            item.only = state.current; item.all = false; item.page = state.current;
+            if (item.scope) delete item.scope;
+            toast("Mục này chỉ áp cho trang " + (state.current + 1) + ".");
+          }
+          render();
+        });
+      });
+      $("dupBtn").addEventListener("click", duplicateSel);
+      $("delSelBtn").addEventListener("click", function(){ $("selChip").click(); });
+
+      var QUICK = {
+        phone:   { x: 0.50, y: 0.195, w: 0.45, h: 0.055, label: "số điện thoại" },
+        cod:     { x: 0.565, y: 0.515, w: 0.385, h: 0.10, label: "tiền thu hộ" }
+      };
+      document.querySelectorAll("[data-quick]").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          if (!state.pages.length){ toast("Hãy tải file vận đơn lên trước đã."); return; }
+          if (btn.dataset.quick === "product"){
+            // Auto-detect: read each page's text (PDF text layer or
+            // OCR), find the product table and mask exactly its real
+            // rows — long names and short names both fit, per page.
+            autoDetectProducts(btn);
+            return;
+          }
+          var q = QUICK[btn.dataset.quick];
+          pushHistory();
+          var r = { id: uid++, x: q.x, y: q.y, w: q.w, h: q.h, style: state.maskStyle, page: state.current };
+          state.rects.push(r);
+          state.sel = { kind: "rect", id: r.id };
+          render();
+          toast("Đã thêm ô che " + q.label + " — kéo để chỉnh đúng vị trí trên nhãn của bạn.");
+        });
+      });
+
+      $("applyAll").addEventListener("change", function(){ state.applyAll = this.checked; state.sel = null; render(); });
+      $("undoBtn").addEventListener("click", undo);
+      $("clearBtn").addEventListener("click", function(){
+        if (!state.rects.length && !state.notes.length) return;
+        pushHistory();
+        state.rects = []; state.notes = []; state.sel = null; render();
+        toast("Đã xóa hết ô che và ghi chú.");
+      });
+      $("prevPageBtn").addEventListener("click", function(){ if (state.current > 0){ state.current--; state.sel = null; render(); } });
+      $("nextPageBtn").addEventListener("click", function(){ if (state.current < state.pages.length - 1){ state.current++; state.sel = null; render(); } });
+      $("copyNextBtn").addEventListener("click", function(){
+        if (state.current >= state.pages.length - 1){ toast("Đang ở trang cuối — không có trang sau để sao chép sang."); return; }
+        if (state.applyAll){ toast("Đang bật “Áp cho tất cả các trang” nên ô che đã hiện ở trang sau rồi. Tắt công tắc đó nếu muốn mỗi trang một bộ ô che riêng."); return; }
+        var target = state.current + 1;
+        var srcs = state.rects.filter(function(r){ return rectAppliesTo(r, state.current) && r.only !== target; });
+        if (!srcs.length){ toast("Trang này chưa có ô che nào để sao chép."); return; }
+        pushHistory();
+        srcs.forEach(function(r){
+          state.rects.push({ id: uid++, x: r.x, y: r.y, w: r.w, h: r.h, style: r.style, page: target, only: target });
+        });
+        state.current = target; state.sel = null; render();
+        toast("Đã sao chép " + srcs.length + " ô che sang trang " + (target + 1) + " — kéo chỉnh lại nếu vị trí lệch.");
+      });
+
+      $("codeInput").addEventListener("input", function(){ state.bigCode.code = this.value; render(); });
+      $("bigCodeOn").addEventListener("change", function(){ state.bigCode.on = this.checked; render(); });
+      $("codeType").addEventListener("change", function(){ state.bigCode.type = this.value; render(); });
+      function syncCodePlaceNote(){
+        $("codePlaceNote").textContent = state.bigCode.place === "overlay"
+          ? "Nhãn giữ nguyên cỡ, dải đè lên mép — phần vận đơn nằm dưới dải sẽ không còn nhìn thấy."
+          : "Nhãn thu nhỏ lại, dải nằm ở lề riêng bên dưới — không che mất nội dung nào của vận đơn.";
+      }
+      $("codePlace").addEventListener("change", function(){
+        state.bigCode.place = this.value;
+        syncCodePlaceNote();
+        render();
+      });
+      $("safeMargin").addEventListener("input", function(){
+        var v = parseFloat(this.value);
+        state.safeMargin = isNaN(v) ? 0 : Math.min(10, Math.max(0, v));
+        scheduleMiniPreview();
+        if ($("previewBk").classList.contains("on")) showPreviewSheet();
+      });
+      $("addStripBtn").addEventListener("click", function(){
+        var ns = newStrip();
+        state.strips.push(ns);
+        state.selectedStripId = ns.id;
+        renderStrips();
+        render();
+        focusStripCard(ns.id, false);
+        toast("Đã thêm Dải " + state.strips.length + " — thẻ của dải mới đang được tô sáng: chọn vị trí, nội dung, cỡ chữ và kiểu in ở đó.");
+      });
+      $("applyCodesBtn").addEventListener("click", function(){
+        if (!state.pages.length){ toast("Hãy tải file vận đơn lên trước đã."); return; }
+        var src = state.bigCode.code.trim();
+        if (!src){
+          for (var i = 0; i < state.pages.length; i++){
+            if (state.pages[i].trackingCode){ src = state.pages[i].trackingCode; break; }
+          }
+        }
+        if (!src){
+          for (var j = 0; j < state.pages.length; j++){
+            if (state.pages[j].orderCode){ src = state.pages[j].orderCode; break; }
+          }
+        }
+        if (!src){
+          toast("Chưa có mã nào để áp — hãy nhập mã vận đơn ở mục “In mã cỡ lớn lên vận đơn” hoặc bấm “Quét lại tất cả” để công cụ tự đọc mã trên nhãn.");
+          return;
+        }
+        var n = 0;
+        state.pages.forEach(function(p){ if (!p.trackingCode){ p.trackingCode = src; n++; } });
+        render();
+        toast(n ? "Đã áp mã " + src + " cho " + n + " trang còn trống." : "Trang nào cũng đã có mã riêng rồi — không cần áp thêm.");
+      });
+      var rescanning = false;
+      $("rescanBtn").addEventListener("click", function(){
+        if (!state.pages.length){ toast("Hãy tải file vận đơn lên trước đã."); return; }
+        if (rescanning) return;
+        rescanning = true;
+        var chain = Promise.resolve();
+        state.pages.forEach(function(page, idx){
+          chain = chain.then(function(){ return getPageLines(page, idx, state.pages.length); });
+        });
+        chain.then(function(){
+          rescanning = false;
+          setDetectStatus("");
+          state.pages.forEach(function(p){ p.orderCode = ""; p.trackingCode = ""; });
+          analyzePages();
+          render();
+          toast("Đã quét lại tất cả các trang — hãng vận chuyển và mã đơn / mã vận đơn cho các dải mã đã được cập nhật.");
+        });
+      });
+      $("paperSel").addEventListener("change", function(){ state.paper = this.value; scheduleMiniPreview(); if ($("previewBk").classList.contains("on")) refreshPreviewGroups(); });
+      $("nupSel").addEventListener("change", function(){ state.nup = parseInt(this.value, 10) || 1; scheduleMiniPreview(); if ($("previewBk").classList.contains("on")) refreshPreviewGroups(); });
+
+      /* ---------------- file loading ---------------- */
+      var dz = $("dropzone"), fi = $("fileInput");
+      $("pickBtn").addEventListener("click", function(){ fi.click(); });
+      fi.addEventListener("change", function(){ if (fi.files.length) loadFiles(fi.files); fi.value = ""; });
+      ["dragenter", "dragover"].forEach(function(ev){ dz.addEventListener(ev, function(e){ e.preventDefault(); dz.classList.add("dragging"); }); });
+      ["dragleave", "drop"].forEach(function(ev){ dz.addEventListener(ev, function(e){ e.preventDefault(); dz.classList.remove("dragging"); }); });
+      dz.addEventListener("drop", function(e){ if (e.dataTransfer.files.length) loadFiles(e.dataTransfer.files); });
+
+      function setStatus(msg){ $("fileStatus").textContent = msg; }
+
+      function loadFiles(fileList){
+        var files = Array.prototype.slice.call(fileList);
+        var added = 0, done = 0;
+        setStatus("Đang đọc " + files.length + " file…");
+        var chain = Promise.resolve();
+        files.forEach(function(f){
+          chain = chain.then(function(){ return loadOne(f).then(function(n){ added += n; }); })
+            .catch(function(){})
+            .then(function(){
+              done++;
+              if (done === files.length){
+                setStatus(added > 0
+                  ? "Đã tải " + added + " trang. Tổng cộng " + state.pages.length + " trang sẵn sàng để che."
+                  : "Không đọc được file nào — hãy chọn PDF hoặc ảnh JPG/PNG.");
+                if (added > 0){ state.current = 0; state.sel = null; analyzePages(); render(); document.getElementById("editor").scrollIntoView({ behavior: "smooth", block: "start" }); }
+              }
+            });
+        });
+      }
+
+      function loadOne(f){
+        if (/pdf/i.test(f.type) || /\.pdf$/i.test(f.name)) return loadPdf(f);
+        if (/image\//.test(f.type)) return loadImage(f);
+        return Promise.resolve(0);
+      }
+
+      function loadImage(f){
+        return new Promise(function(resolve){
+          var url = URL.createObjectURL(f);
+          var img = new Image();
+          img.onload = function(){
+            var c = document.createElement("canvas");
+            c.width = img.naturalWidth; c.height = img.naturalHeight;
+            c.getContext("2d").drawImage(img, 0, 0);
+            URL.revokeObjectURL(url);
+            state.pages.push({ src: c, name: f.name, lines: null, kind: "image" });
+            resolve(1);
+          };
+          img.onerror = function(){ URL.revokeObjectURL(url); resolve(0); };
+          img.src = url;
+        });
+      }
+
+      function loadPdf(f){
+        return f.arrayBuffer().then(function(buf){
+          return pdfjsLib.getDocument({ data: buf }).promise;
+        }).then(function(pdf){
+          var count = 0;
+          var chain = Promise.resolve();
+          var addPage = function(num){
+            chain = chain.then(function(){
+              return pdf.getPage(num).then(function(page){
+                var vp = page.getViewport({ scale: 2 });
+                var c = document.createElement("canvas");
+                c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+                var renderP = page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+                // Capture the PDF's own text layer alongside the render:
+                // it is what lets "Che tên sản phẩm (tự động)" find the
+                // product table and size the mask to the real row count.
+                var textP = page.getTextContent()
+                  .then(function(tc){ return buildPdfLines(tc, vp); })
+                  .catch(function(){ return []; });
+                return Promise.all([renderP, textP]).then(function(res){
+                  state.pages.push({ src: c, name: f.name + " · tr." + num, lines: res[1], kind: "pdf" });
+                  count++;
+                });
+              });
+            });
+          };
+          for (var i = 1; i <= pdf.numPages; i++) addPage(i);
+          return chain.then(function(){ return count; });
+        }).catch(function(){ return 0; });
+      }
+
+      /* ---------------- sample label ---------------- */
+      // The sample mirrors the real-world case users hit: ONE TikTok Shop
+      // order whose waybill is 2 pages — the product table starts at the
+      // bottom of page 1 and continues at the top of page 2 (same order).
+      function sampleCanvas(){
+        var c = document.createElement("canvas"); c.width = 900; c.height = 1200;
+        var x = c.getContext("2d");
+        x.fillStyle = "#fff"; x.fillRect(0, 0, 900, 1200);
+        x.strokeStyle = "#222"; x.lineWidth = 3; x.strokeRect(15, 15, 870, 1170);
+        x.fillStyle = "#111"; x.textAlign = "left";
+        return { c: c, x: x };
+      }
+      function sampleProductHeader(x, y){
+        x.font = "700 25px Arial";
+        x.fillText("Product Name", 45, y); x.fillText("SKU", 470, y); x.fillText("Seller SKU", 610, y); x.fillText("Qty", 800, y);
+        x.lineWidth = 2; x.beginPath(); x.moveTo(15, y + 16); x.lineTo(885, y + 16); x.stroke();
+      }
+      function makeSamplePage1(){
+        var s = sampleCanvas(), x = s.x;
+        x.font = "800 40px Arial"; x.fillText("Shop Online", 45, 68);
+        x.font = "700 30px Arial"; x.textAlign = "right"; x.fillText("Giao Nhanh 24H", 855, 68); x.textAlign = "left";
+        // fake barcode + tracking code
+        var bx = 300; x.fillStyle = "#000"; var seed = 7;
+        for (var i = 0; i < 46; i++){ seed = (seed * 31 + 17) % 97; var bw = 2 + (seed % 5); if (seed % 3) x.fillRect(bx, 88, bw, 62); bx += bw + 3; }
+        x.fillStyle = "#111";
+        x.font = "700 30px Arial"; x.textAlign = "center"; x.fillText("VD2025000001", 450, 185); x.textAlign = "left";
+        x.lineWidth = 2; x.beginPath(); x.moveTo(15, 205); x.lineTo(885, 205); x.stroke();
+        // sender / recipient — phone sits where the phone quick-mask lands
+        x.font = "600 25px Arial"; x.fillText("Người gửi: Shop Mẫu — Hà Nội", 45, 240);
+        x.font = "700 29px Arial"; x.fillText("Người nhận: Nguyễn Văn An", 45, 285);
+        x.font = "600 27px Arial"; x.fillText("(+84)901***567", 520, 285);
+        // big address block
+        x.font = "800 38px Arial";
+        x.fillText("Số 12, ngõ 34,", 45, 360);
+        x.fillText("phường Dịch Vọng,", 45, 415);
+        x.fillText("quận Cầu Giấy, Hà Nội", 45, 470);
+        x.lineWidth = 2; x.beginPath(); x.moveTo(15, 505); x.lineTo(885, 505); x.stroke();
+        // info row + COD box (COD box sits where the COD quick-mask lands)
+        x.font = "600 25px Arial";
+        x.fillText("Trọng lượng tính phí:", 45, 560);
+        x.fillText("0,505 KG", 45, 600);
+        x.fillText("Order ID: VD2025000001", 45, 660);
+        x.fillText("Đặt hàng: 07-07-2025 16:20", 45, 700);
+        x.strokeRect(508, 618, 347, 120);
+        x.font = "700 25px Arial"; x.fillText("Tiền thu hộ (COD):", 528, 662);
+        x.font = "800 32px Arial"; x.fillText("459.000đ", 528, 706);
+        x.font = "500 24px Arial"; x.fillText("Người nhận ký:", 560, 800);
+        x.fillText("Ghi chú: kiểm tra hàng trước khi nhận.", 45, 800);
+        // dashed cut line, then the product table starts at the page bottom
+        x.save(); x.setLineDash([10, 8]); x.lineWidth = 2;
+        x.beginPath(); x.moveTo(15, 950); x.lineTo(885, 950); x.stroke(); x.restore();
+        x.font = "600 24px Arial"; x.fillText("In transit by: 23:59 hôm nay", 45, 992);
+        sampleProductHeader(x, 1032);
+        x.font = "500 25px Arial";
+        x.fillText("Áo thun cotton cổ tròn — đen, L", 45, 1090); x.fillText("AO-THUN-L", 470, 1090); x.fillText("ao-thun-l", 610, 1090); x.fillText("2", 800, 1090);
+        x.fillText("Giày chạy bộ nữ — hồng, 38 (tiếp ở trang 2 →)", 45, 1140);
+        x.font = "600 22px Arial"; x.fillText("…bảng sản phẩm còn tiếp ở đầu trang 2…", 45, 1180);
+        return s.c;
+      }
+      function makeSamplePage2(){
+        var s = sampleCanvas(), x = s.x;
+        // Same order, page 2: the product table continues at the very top.
+        x.font = "600 24px Arial"; x.fillText("In transit by: 23:59 hôm nay", 45, 55);
+        sampleProductHeader(x, 95);
+        x.font = "500 25px Arial";
+        x.fillText("Giày chạy bộ nữ — hồng, 38", 45, 152); x.fillText("GIAY-H38", 470, 152); x.fillText("giay-h38", 610, 152); x.fillText("1", 800, 152);
+        x.font = "700 25px Arial"; x.textAlign = "right"; x.fillText("Qty Total: 3", 855, 205); x.textAlign = "left";
+        x.lineWidth = 2; x.beginPath(); x.moveTo(15, 228); x.lineTo(885, 228); x.stroke();
+        x.font = "700 27px Arial"; x.fillText("Shop Online", 45, 278);
+        x.font = "600 24px Arial"; x.fillText("Order ID: VD2025000001 — cùng đơn với trang 1", 300, 278);
+        x.font = "500 23px Arial"; x.fillStyle = "#666";
+        x.fillText("(Trang 2 của cùng một đơn: bảng sản phẩm tràn từ cuối trang 1", 45, 365);
+        x.fillText("sang đầu trang 2 — che tên sản phẩm phải che ở cả hai chỗ.)", 45, 400);
+        return s.c;
+      }
+
+      function makeSampleSingle(){
+        // A one-page order: few products, so the whole product table —
+        // header, both rows and the Qty Total line — fits on this page.
+        var s = sampleCanvas(), x = s.x;
+        x.font = "800 40px Arial"; x.fillText("Shop Online", 45, 68);
+        x.font = "700 30px Arial"; x.textAlign = "right"; x.fillText("Giao Nhanh 24H", 855, 68); x.textAlign = "left";
+        var bx = 300; x.fillStyle = "#000"; var seed = 11;
+        for (var i = 0; i < 46; i++){ seed = (seed * 31 + 17) % 97; var bw = 2 + (seed % 5); if (seed % 3) x.fillRect(bx, 88, bw, 62); bx += bw + 3; }
+        x.fillStyle = "#111";
+        x.font = "700 30px Arial"; x.textAlign = "center"; x.fillText("VD2025000002", 450, 185); x.textAlign = "left";
+        x.lineWidth = 2; x.beginPath(); x.moveTo(15, 205); x.lineTo(885, 205); x.stroke();
+        x.font = "600 25px Arial"; x.fillText("Người gửi: Shop Mẫu — Hà Nội", 45, 240);
+        x.font = "700 29px Arial"; x.fillText("Người nhận: Trần Thị Bình", 45, 285);
+        x.font = "600 27px Arial"; x.fillText("(+84)912***345", 520, 285);
+        x.font = "800 38px Arial";
+        x.fillText("Số 8, đường Lê Lợi,", 45, 360);
+        x.fillText("phường Bến Nghé,", 45, 415);
+        x.fillText("Quận 1, TP. Hồ Chí Minh", 45, 470);
+        x.lineWidth = 2; x.beginPath(); x.moveTo(15, 505); x.lineTo(885, 505); x.stroke();
+        x.font = "600 25px Arial";
+        x.fillText("Trọng lượng tính phí:", 45, 560);
+        x.fillText("0,300 KG", 45, 600);
+        x.fillText("Order ID: VD2025000002", 45, 660);
+        x.fillText("Đặt hàng: 08-07-2025 09:15", 45, 700);
+        x.strokeRect(508, 618, 347, 120);
+        x.font = "700 25px Arial"; x.fillText("Tiền thu hộ (COD):", 528, 662);
+        x.font = "800 32px Arial"; x.fillText("189.000đ", 528, 706);
+        x.font = "500 24px Arial"; x.fillText("Người nhận ký:", 560, 800);
+        x.fillText("Ghi chú: giao giờ hành chính.", 45, 800);
+        x.save(); x.setLineDash([10, 8]); x.lineWidth = 2;
+        x.beginPath(); x.moveTo(15, 920); x.lineTo(885, 920); x.stroke(); x.restore();
+        x.font = "600 24px Arial"; x.fillText("In transit by: 23:59 hôm nay", 45, 960);
+        sampleProductHeader(x, 1000);
+        x.font = "500 25px Arial";
+        x.fillText("Áo thun cotton cổ tròn — trắng, M", 45, 1055); x.fillText("AO-THUN-M", 470, 1055); x.fillText("ao-thun-m", 610, 1055); x.fillText("1", 800, 1055);
+        x.fillText("Mũ lưỡi trai thêu logo — đen", 45, 1100); x.fillText("MU-DEN", 470, 1100); x.fillText("mu-den", 610, 1100); x.fillText("1", 800, 1100);
+        x.lineWidth = 2; x.beginPath(); x.moveTo(15, 1128); x.lineTo(885, 1128); x.stroke();
+        x.font = "700 25px Arial"; x.textAlign = "right"; x.fillText("Qty Total: 2", 855, 1162); x.textAlign = "left";
+        return s.c;
+      }
+
+      $("sampleBtn").addEventListener("click", function(){
+        // The samples carry the text lines they were drawn with, so
+        // auto-detection can run on them exactly like on a real PDF.
+        state.pages.push({ src: makeSamplePage1(), name: "Nhãn mẫu · đơn 2 trang · tr.1", kind: "sample", lines: [
+          { text: "VD2025000001", x0: 0.33, y0: 0.135, x1: 0.67, y1: 0.163 },
+          { text: "Order ID: VD2025000001", x0: 0.05, y0: 0.53, x1: 0.45, y1: 0.558 },
+          { text: "Product Name SKU Seller SKU Qty", x0: 0.05, y0: 0.839, x1: 0.95, y1: 0.867 },
+          { text: "Áo thun cotton cổ tròn — đen, L AO-THUN-L ao-thun-l 2", x0: 0.05, y0: 0.885, x1: 0.95, y1: 0.915 },
+          { text: "Giày chạy bộ nữ — hồng, 38 (tiếp ở trang 2)", x0: 0.05, y0: 0.927, x1: 0.72, y1: 0.957 }
+        ] });
+        state.pages.push({ src: makeSamplePage2(), name: "Nhãn mẫu · đơn 2 trang · tr.2", kind: "sample", lines: [
+          { text: "VD2025000001", x0: 0.33, y0: 0.005, x1: 0.67, y1: 0.02 },
+          { text: "In transit by: 23:59 hôm nay", x0: 0.05, y0: 0.025, x1: 0.42, y1: 0.053 },
+          { text: "Product Name SKU Seller SKU Qty", x0: 0.05, y0: 0.058, x1: 0.95, y1: 0.086 },
+          { text: "Giày chạy bộ nữ — hồng, 38 GIAY-H38 giay-h38 1", x0: 0.05, y0: 0.104, x1: 0.95, y1: 0.133 },
+          { text: "Qty Total: 3", x0: 0.78, y0: 0.148, x1: 0.95, y1: 0.178 },
+          { text: "Shop Online Order ID: VD2025000001", x0: 0.05, y0: 0.211, x1: 0.95, y1: 0.238 }
+        ] });
+        state.current = state.pages.length - 2;
+        state.sel = null;
+        if (!$("codeInput").value){
+          $("codeInput").value = "VD2025000001";
+          state.bigCode.code = "VD2025000001";
+        }
+        setStatus("Đã thêm nhãn mẫu: một đơn hàng gồm 2 trang, bảng sản phẩm tràn từ cuối trang 1 sang đầu trang 2. Bấm “Che tên sản phẩm (tự động)” rồi chuyển sang trang 2: mỗi trang được nhận diện riêng, ô che vừa đúng phần bảng nằm trên trang đó.");
+        analyzePages();
+        render();
+        document.getElementById("editor").scrollIntoView({ behavior: "smooth", block: "start" });
+        toast("Đã nạp nhãn mẫu 2 trang của cùng một đơn — thử bấm “Che tên sản phẩm (tự động)” nhé.");
+      });
+
+      $("sample1Btn").addEventListener("click", function(){
+        state.pages.push({ src: makeSampleSingle(), name: "Nhãn mẫu · đơn 1 trang", kind: "sample", lines: [
+          { text: "VD2025000002", x0: 0.33, y0: 0.135, x1: 0.67, y1: 0.163 },
+          { text: "Order ID: VD2025000002", x0: 0.05, y0: 0.53, x1: 0.45, y1: 0.558 },
+          { text: "Product Name SKU Seller SKU Qty", x0: 0.05, y0: 0.813, x1: 0.95, y1: 0.841 },
+          { text: "Áo thun cotton cổ tròn — trắng, M AO-THUN-M ao-thun-m 1", x0: 0.05, y0: 0.858, x1: 0.95, y1: 0.888 },
+          { text: "Mũ lưỡi trai thêu logo — đen MU-DEN mu-den 1", x0: 0.05, y0: 0.896, x1: 0.95, y1: 0.925 },
+          { text: "Qty Total: 2", x0: 0.78, y0: 0.948, x1: 0.95, y1: 0.975 }
+        ] });
+        state.current = state.pages.length - 1;
+        state.sel = null;
+        if (!$("codeInput").value){
+          $("codeInput").value = "VD2025000002";
+          state.bigCode.code = "VD2025000002";
+        }
+        setStatus("Đã thêm nhãn mẫu: một đơn hàng chỉ có 1 trang, toàn bộ bảng sản phẩm nằm trên trang này. Bấm “Che tên sản phẩm (tự động)” để xem ô che tự vừa với đúng 2 dòng sản phẩm — và xem chữ dọc chạy ở hai bên sườn nhãn.");
+        analyzePages();
+        render();
+        document.getElementById("editor").scrollIntoView({ behavior: "smooth", block: "start" });
+        toast("Đã nạp nhãn mẫu đơn 1 trang — thử bấm “Che tên sản phẩm (tự động)” nhé.");
+      });
+
+      /* ---------------- templates (localStorage) ---------------- */
+      var TPL_KEY = "che-van-don-templates-v1";
+      function readTpls(){
+        try { return JSON.parse(localStorage.getItem(TPL_KEY) || "{}"); } catch(e){ return {}; }
+      }
+      function writeTpls(t){ try { localStorage.setItem(TPL_KEY, JSON.stringify(t)); } catch(e){} }
+      function renderTpls(){
+        var box = $("tplList"); box.innerHTML = "";
+        var tpls = readTpls();
+        var names = Object.keys(tpls);
+        if (!names.length){
+          var d = document.createElement("div");
+          d.className = "template-empty"; d.textContent = "Chưa có mẫu nào. Vẽ ô che xong, đặt tên rồi bấm lưu.";
+          box.appendChild(d); return;
+        }
+        names.forEach(function(name){
+          var row = document.createElement("div"); row.className = "template-item";
+          var s = document.createElement("span"); s.className = "tname"; s.textContent = name;
+          var apply = document.createElement("button"); apply.type = "button"; apply.className = "btn small primary"; apply.textContent = "Áp mẫu";
+          apply.addEventListener("click", function(){
+            if (!state.pages.length){ toast("Hãy tải file vận đơn lên trước, rồi mới áp mẫu."); return; }
+            var t = readTpls()[name]; if (!t) return;
+            pushHistory();
+            state.rects = t.rects || []; state.notes = t.notes || [];
+            state.applyAll = t.applyAll !== false;
+            $("applyAll").checked = state.applyAll;
+            if (t.bigCode){
+              state.bigCode.on = !!t.bigCode.on; state.bigCode.type = t.bigCode.type || "both";
+              state.bigCode.place = t.bigCode.place || (t.bigCode.shrink === false ? "overlay" : "shrink");
+              $("bigCodeOn").checked = state.bigCode.on; $("codeType").value = state.bigCode.type; $("codePlace").value = state.bigCode.place;
+              syncCodePlaceNote();
+            }
+            if (t.strips && t.strips.length){
+              state.strips = t.strips.map(function(s){
+                var c = Object.assign({}, s);
+                if (c.id == null) c.id = stripUid++;
+                return c;
+              });
+              state.strips.forEach(function(s){ stripUid = Math.max(stripUid, (s.id || 0) + 1); });
+            } else if (t.sideText){
+              // Mẫu lưu từ bản cũ (chữ dọc hai sườn) → chuyển thành dải.
+              state.strips = [];
+              if (t.sideText.right !== false) state.strips.push({ id: stripUid++, pos: "right", thick: 5 * (t.sideText.size || 1), content: "text", text: t.sideText.text || "", codeSource: "tracking", style: "bigtext", color: "#b91c1c", bg: "#ffffff" });
+              if (t.sideText.left !== false) state.strips.push({ id: stripUid++, pos: "left", thick: 5 * (t.sideText.size || 1), content: "text", text: t.sideText.text || "", codeSource: "tracking", style: "bigtext", color: "#b91c1c", bg: "#ffffff" });
+            }
+            renderStrips();
+            if (t.paper){ state.paper = t.paper; $("paperSel").value = t.paper; }
+            if (t.nup){ state.nup = t.nup; $("nupSel").value = String(t.nup); }
+            if (t.safeMargin != null){ state.safeMargin = t.safeMargin; $("safeMargin").value = t.safeMargin; }
+            uid = 100000 + Math.floor(Math.random() * 100000);
+            state.sel = null; render();
+            toast("Đã áp mẫu “" + name + "”.");
+          });
+          var del = document.createElement("button"); del.type = "button"; del.className = "btn small danger"; del.textContent = "Xóa";
+          del.addEventListener("click", function(){
+            var t = readTpls(); delete t[name]; writeTpls(t); renderTpls();
+            toast("Đã xóa mẫu “" + name + "”.");
+          });
+          row.appendChild(s); row.appendChild(apply); row.appendChild(del);
+          box.appendChild(row);
+        });
+      }
+      $("saveTplBtn").addEventListener("click", function(){
+        var name = $("tplName").value.trim();
+        if (!name){ toast("Hãy nhập tên mẫu trước, ví dụ “Vận đơn Shopee”."); $("tplName").focus(); return; }
+        if (!state.rects.length && !state.notes.length){ toast("Chưa có ô che hay ghi chú nào để lưu."); return; }
+        var tpls = readTpls();
+        tpls[name] = {
+          rects: state.rects, notes: state.notes, applyAll: state.applyAll,
+          bigCode: { on: state.bigCode.on, type: state.bigCode.type, place: state.bigCode.place },
+          strips: state.strips,
+          paper: state.paper, nup: state.nup, safeMargin: state.safeMargin
+        };
+        writeTpls(tpls);
+        $("tplName").value = "";
+        renderTpls();
+        toast("Đã lưu mẫu “" + name + "”.");
+      });
+      renderTpls();
+      renderStrips();
+
+      /* ---------------- export: PNG download ---------------- */
+      function downloadURI(uri, name){
+        var a = document.createElement("a");
+        a.href = uri; a.download = name;
+        document.body.appendChild(a); a.click(); a.remove();
+      }
+      function exportPNG(pageIdx){
+        var composed = compose(pageIdx, 1240);
+        if (!composed) return;
+        downloadURI(composed.toDataURL("image/png"), "van-don-da-che-trang-" + (pageIdx + 1) + ".png");
+      }
+      $("dlPageBtn").addEventListener("click", function(){ exportPNG(state.current); toast("Đã tải ảnh trang " + (state.current + 1) + " — nội dung đã che trong ảnh là mất hẳn."); });
+      $("dlAllBtn").addEventListener("click", function(){
+        state.pages.forEach(function(_, i){ setTimeout(function(){ exportPNG(i); }, i * 450); });
+        toast("Đang tải " + state.pages.length + " ảnh PNG — nội dung đã che trong ảnh là mất hẳn.");
+      });
+
+      /* ---------------- export: print ---------------- */
+      function paperSizeMM(){
+        switch (state.paper){
+          case "a4": return [210, 297];
+          case "a5": return [148, 210];
+          case "a6": return [105, 148];
+          case "label100": return [100, 150];
+          case "label75": return [75, 100];
+          default: {
+            // "Giữ khổ của file": PDF pages were rendered at scale 2
+            // from points, so mm = px / 2 * 25.4 / 72. For images and
+            // samples, keep a 100mm width and the file's aspect ratio.
+            var p = state.pages[0];
+            if (!p) return [100, 150];
+            if (p.kind === "pdf"){
+              var k = 25.4 / 72 / 2;
+              return [Math.round(p.src.width * k * 10) / 10, Math.round(p.src.height * k * 10) / 10];
+            }
+            return [100, Math.round(100 * p.src.height / p.src.width)];
+          }
+        }
+      }
+      /* ----- Shared sheet builder: print preview, the staged print
+         area and the PDF export all render through renderSheetCanvas,
+         so what the preview shows is exactly what gets printed and
+         exactly what lands in the PDF. ----- */
+      function paperName(){
+        var sel = $("paperSel");
+        return sel && sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex].text : state.paper;
+      }
+      function nupLayout(){
+        var n = Math.max(1, state.nup | 0);
+        return { n: n, cols: n === 1 ? 1 : 2, rows: n === 4 ? 2 : 1 };
+      }
+      function buildSheetGroups(onlyFirst){
+        var idxs = onlyFirst ? [0] : state.pages.map(function(_, i){ return i; });
+        var n = nupLayout().n;
+        var groups = [];
+        for (var k = 0; k < idxs.length; k += n) groups.push(idxs.slice(k, k + n));
+        return groups;
+      }
+      function renderSheetCanvas(indices, dpi){
+        var size = paperSizeMM();
+        var pxmm = (dpi || 200) / 25.4;
+        var W = Math.max(50, Math.round(size[0] * pxmm));
+        var H = Math.max(50, Math.round(size[1] * pxmm));
+        var c = document.createElement("canvas");
+        c.width = W; c.height = H;
+        var ctx = c.getContext("2d");
+        ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, W, H);
+        var lay = nupLayout();
+        var safePx = state.safeMargin * pxmm;
+        var gapPx = safePx;
+        var innerW = Math.max(10, W - safePx * 2);
+        var innerH = Math.max(10, H - safePx * 2);
+        var cellW = (innerW - gapPx * (lay.cols - 1)) / lay.cols;
+        var cellH = (innerH - gapPx * (lay.rows - 1)) / lay.rows;
+        indices.forEach(function(pageIdx, k){
+          var composed = compose(pageIdx, 1240);
+          if (!composed) return;
+          var col = k % lay.cols, row = Math.floor(k / lay.cols);
+          var cx = safePx + col * (cellW + gapPx);
+          var cy = safePx + row * (cellH + gapPx);
+          var scale = Math.min(cellW / composed.width, cellH / composed.height);
+          var dw = composed.width * scale, dh = composed.height * scale;
+          ctx.drawImage(composed, cx + (cellW - dw) / 2, cy + (cellH - dh) / 2, dw, dh);
+        });
+        return c;
+      }
+      function sheetWarnings(indices){
+        var warns = [];
+        if (state.safeMargin < 2){
+          warns.push("Lề an toàn đang đặt " + state.safeMargin + "mm — nhỏ hơn 2mm nên nhiều máy in có thể cắt cụt phần sát mép giấy.");
+        }
+        var size = paperSizeMM();
+        var lay = nupLayout();
+        var cellWmm = (size[0] - state.safeMargin * 2 - state.safeMargin * (lay.cols - 1)) / lay.cols;
+        var cellHmm = (size[1] - state.safeMargin * 2 - state.safeMargin * (lay.rows - 1)) / lay.rows;
+        indices.forEach(function(pageIdx){
+          var pg = state.pages[pageIdx];
+          if (!pg) return;
+          var aspect = pg.src.width / pg.src.height;
+          var fw = Math.min(cellWmm, cellHmm * aspect);
+          var fh = fw / aspect;
+          if (fw >= cellWmm * 0.995 && fh >= cellHmm * 0.995){
+            warns.push("Nhãn trang " + (pageIdx + 1) + " vừa khít ô in và chạm cả bốn phía đường lề an toàn — nếu máy in của bạn có vùng không in được lớn hơn " + state.safeMargin + "mm, hãy tăng Lề an toàn lên rồi xem lại.");
+          }
+        });
+        return warns;
+      }
+      function positionSafeOverlay(el, wrapEl){
+        if (!el || !wrapEl) return;
+        var size = paperSizeMM();
+        var lx = (state.safeMargin / size[0] * 100) + "%";
+        var ty = (state.safeMargin / size[1] * 100) + "%";
+        el.style.left = lx; el.style.right = lx; el.style.top = ty; el.style.bottom = ty;
+        wrapEl.style.aspectRatio = size[0] + " / " + size[1];
+        // Keep very wide sheets (landscape file sizes) from growing too tall.
+        wrapEl.style.maxWidth = size[0] >= size[1] ? "100%" : Math.round(560 * size[0] / size[1]) + "px";
+      }
+
+      /* ----- Mini preview (first sheet) in the paper-size panel ----- */
+      var miniTimer = null;
+      function scheduleMiniPreview(){
+        if (miniTimer) clearTimeout(miniTimer);
+        miniTimer = setTimeout(updateMiniPreview, 350);
+      }
+      function updateMiniPreview(){
+        var box = $("miniPreview");
+        if (!box) return;
+        if (!state.pages.length){ box.style.display = "none"; return; }
+        box.style.display = "block";
+        var groups = buildSheetGroups(false);
+        var sheet = renderSheetCanvas(groups[0], 110);
+        $("miniSheetImg").src = sheet.toDataURL("image/png");
+        positionSafeOverlay($("miniSafe"), $("miniSheetWrap"));
+        var size = paperSizeMM();
+        $("miniInfo").textContent = "Xem trước tờ 1 / " + groups.length + " — " + paperName() + " " + size[0] + "×" + size[1] + "mm · " + nupLayout().n + " nhãn mỗi tờ · viền đứt nét đỏ là lề an toàn " + state.safeMargin + "mm. Bấm “Xem trước bản in” để xem từng tờ lớn hơn.";
+      }
+
+      /* ----- Full print preview ----- */
+      var previewState = { groups: [], idx: 0, onlyFirst: false };
+      function refreshPreviewGroups(){
+        previewState.groups = buildSheetGroups(previewState.onlyFirst);
+        if (previewState.idx >= previewState.groups.length) previewState.idx = Math.max(0, previewState.groups.length - 1);
+        showPreviewSheet();
+      }
+      function openPrintPreview(onlyFirst){
+        if (!state.pages.length){ toast("Hãy tải file vận đơn lên trước đã."); return; }
+        previewState.onlyFirst = !!onlyFirst;
+        previewState.idx = 0;
+        previewState.groups = buildSheetGroups(previewState.onlyFirst);
+        $("previewBk").classList.add("on");
+        showPreviewSheet();
+      }
+      function showPreviewSheet(){
+        if (!previewState.groups.length) return;
+        var g = previewState.groups[previewState.idx];
+        var sheet = renderSheetCanvas(g, 150);
+        $("previewImg").src = sheet.toDataURL("image/png");
+        positionSafeOverlay($("previewSafe"), $("previewSheetWrap"));
+        var size = paperSizeMM();
+        $("previewSheetLabel").textContent = "Tờ " + (previewState.idx + 1) + " / " + previewState.groups.length +
+          " · " + paperName() + " " + size[0] + "×" + size[1] + "mm · " + nupLayout().n + " nhãn mỗi tờ" +
+          " · gồm trang " + g.map(function(x){ return x + 1; }).join(", ");
+        $("previewPrevBtn").disabled = previewState.idx <= 0;
+        $("previewNextBtn").disabled = previewState.idx >= previewState.groups.length - 1;
+        var warns = sheetWarnings(g);
+        var wEl = $("previewWarn"), oEl = $("previewOk");
+        if (warns.length){
+          wEl.style.display = "block";
+          wEl.textContent = "⚠ " + warns.join(" ");
+          oEl.style.display = "none";
+        } else {
+          wEl.style.display = "none";
+          oEl.style.display = "block";
+          oEl.textContent = "✓ Không nhãn nào chạm đường lề an toàn trên tờ này — in ra sẽ giống hệt bản xem trước.";
+        }
+      }
+      $("previewPrevBtn").addEventListener("click", function(){ if (previewState.idx > 0){ previewState.idx--; showPreviewSheet(); } });
+      $("previewNextBtn").addEventListener("click", function(){ if (previewState.idx < previewState.groups.length - 1){ previewState.idx++; showPreviewSheet(); } });
+      $("previewCloseBtn").addEventListener("click", function(){ $("previewBk").classList.remove("on"); });
+      $("previewBk").addEventListener("click", function(e){ if (e.target === this) this.classList.remove("on"); });
+      $("previewPrintBtn").addEventListener("click", function(){
+        $("previewBk").classList.remove("on");
+        doPrint(previewState.onlyFirst);
+      });
+      $("previewPdfBtn").addEventListener("click", function(){ exportPDF(); });
+      $("previewBtn").addEventListener("click", function(){ openPrintPreview(false); });
+      $("openPreviewBtn").addEventListener("click", function(){ openPrintPreview(false); });
+
+      /* ----- Staged print area (same sheet canvases as the preview) ----- */
+      function doPrint(onlyFirst){
+        var area = $("printArea");
+        area.innerHTML = "";
+        var size = paperSizeMM();
+        var st = document.getElementById("pageStyle");
+        if (!st){ st = document.createElement("style"); st.id = "pageStyle"; document.head.appendChild(st); }
+        st.textContent = "@page { size: " + size[0] + "mm " + size[1] + "mm; margin: 0; }";
+        var groups = buildSheetGroups(onlyFirst);
+        groups.forEach(function(g){
+          var sheet = renderSheetCanvas(g, 200);
+          var div = document.createElement("div"); div.className = "p-page";
+          div.style.width = size[0] + "mm"; div.style.height = size[1] + "mm";
+          var img = document.createElement("img");
+          img.src = sheet.toDataURL("image/png");
+          img.alt = "";
+          img.style.width = "100%"; img.style.height = "100%"; img.style.display = "block";
+          div.appendChild(img);
+          area.appendChild(div);
+        });
+        // The sandboxed frame cannot open the print dialog itself, so the
+        // composed sheets are staged in #printArea (the only thing the
+        // @media print stylesheet prints) and the user prints from the
+        // browser/device print command.
+        var totalLabels = groups.reduce(function(a, g){ return a + g.length; }, 0);
+        $("printHintText").textContent = onlyFirst
+          ? "Đã chuẩn bị bản in thử trang 1 (1 tờ, khổ " + size[0] + "×" + size[1] + "mm) — giống hệt tờ 1 trong bản xem trước."
+          : "Đã chuẩn bị bản in cho " + totalLabels + " trang thành " + groups.length + " tờ (khổ " + size[0] + "×" + size[1] + "mm, ghép " + nupLayout().n + " nhãn mỗi tờ) — giống hệt bản xem trước.";
+        var hint = $("printHint");
+        hint.style.display = "block";
+        hint.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        toast("Bản in đã sẵn sàng — hãy dùng lệnh In của trình duyệt (Ctrl+P) để in ra.");
+      }
+
+      /* ----- PDF export (jsPDF, fully in the browser) ----- */
+      var exportingPdf = false;
+      function loadJsPDF(){
+        if (window.jspdf && window.jspdf.jsPDF) return Promise.resolve(window.jspdf.jsPDF);
+        return new Promise(function(resolve, reject){
+          var sc = document.createElement("script");
+          sc.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+          sc.onload = function(){
+            if (window.jspdf && window.jspdf.jsPDF) resolve(window.jspdf.jsPDF);
+            else reject(new Error("jspdf missing"));
+          };
+          sc.onerror = function(){ reject(new Error("jspdf load failed")); };
+          document.head.appendChild(sc);
+        });
+      }
+      function exportPDF(){
+        if (exportingPdf) return;
+        if (!state.pages.length){ toast("Hãy tải file vận đơn lên trước đã."); return; }
+        exportingPdf = true;
+        var btn = $("dlPdfBtn");
+        var oldLabel = btn.textContent;
+        btn.disabled = true; btn.textContent = "Đang xuất PDF…";
+        var status = $("exportStatus");
+        var totalPages = state.pages.length;
+        loadJsPDF().then(function(JsPDF){
+          var size = paperSizeMM();
+          var groups = buildSheetGroups(false);
+          var orient = size[0] > size[1] ? "landscape" : "portrait";
+          var doc = new JsPDF({ unit: "mm", format: [size[0], size[1]], orientation: orient, compress: true });
+          var processed = 0;
+          var chain = Promise.resolve();
+          groups.forEach(function(g, gi){
+            chain = chain.then(function(){
+              var sheet = renderSheetCanvas(g, 200);
+              var data = sheet.toDataURL("image/jpeg", 0.95);
+              if (gi > 0) doc.addPage([size[0], size[1]], orient);
+              doc.addImage(data, "JPEG", 0, 0, size[0], size[1]);
+              processed += g.length;
+              if (status) status.textContent = "Đang xuất trang " + processed + " / " + totalPages + "…";
+              // Yield so the progress text paints and the UI stays live
+              // even with 100+ page files.
+              return new Promise(function(r){ setTimeout(r, 20); });
+            });
+          });
+          return chain.then(function(){
+            var d = new Date();
+            function pad(n){ return (n < 10 ? "0" : "") + n; }
+            var fname = "van-don-da-che-" + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + ".pdf";
+            doc.save(fname);
+            if (status) status.textContent = "Đã xuất file " + fname + " — " + groups.length + " tờ, mỗi tờ đúng " + size[0] + "×" + size[1] + "mm (" + paperName() + "), gồm tất cả " + totalPages + " trang đã che.";
+            toast("Đã tải file PDF " + fname + " — mở ra sẽ thấy đúng như bản xem trước bản in.");
+          });
+        }).catch(function(){
+          if (status) status.textContent = "Không tải được thư viện tạo PDF — cần có mạng ở lần xuất đầu tiên. Hãy kiểm tra kết nối rồi bấm lại “Tải PDF”.";
+          toast("Chưa xuất được PDF: cần mạng để tải thư viện tạo PDF ở lần đầu.");
+        }).then(function(){
+          exportingPdf = false;
+          btn.disabled = false; btn.textContent = oldLabel;
+        });
+      }
+      $("dlPdfBtn").addEventListener("click", exportPDF);
+
+      $("printBtn").addEventListener("click", function(){
+        if (!state.pages.length) return;
+        $("modalBk").classList.add("on");
+      });
+      $("modalCancel").addEventListener("click", function(){ $("modalBk").classList.remove("on"); });
+      $("modalOne").addEventListener("click", function(){ $("modalBk").classList.remove("on"); openPrintPreview(true); });
+      $("modalAll").addEventListener("click", function(){ $("modalBk").classList.remove("on"); openPrintPreview(false); });
+      $("modalBk").addEventListener("click", function(e){ if (e.target === this) this.classList.remove("on"); });
+
+      window.addEventListener("resize", function(){ render(); });
+    })();
+    </script>
+  </body>
+</html>
